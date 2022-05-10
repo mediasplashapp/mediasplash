@@ -1,0 +1,1 @@
+This project uses an FFmpeg executable from a system call, The FFmpeg executable can be found in https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-full.7z
