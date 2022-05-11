@@ -1,3 +1,4 @@
 wxpython
-pysubparser
+cytolk
+ass
 python-vlc

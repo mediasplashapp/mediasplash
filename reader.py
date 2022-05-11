@@ -1,17 +1,18 @@
 import json
 import subprocess
 from cleaner import clean
-import pyperclip
 import os
+
+
 def generate_subtitles(filename, temp_dir):
     info = subprocess.getoutput(f'ffprobe -v error  -show_entries stream -print_format json "{filename}"')
     data = {}
     try:
         data = json.loads(info)
-    except:
+    except json.decoder.JSONDecodeError:
         return data
     final = {}
-    if not "streams" in data:
+    if "streams" not in data:
         return final
     for i in data['streams']:
         if "codec_name" in i and "index" in i and i['codec_type'] == 'subtitle':
