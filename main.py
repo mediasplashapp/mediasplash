@@ -1,6 +1,7 @@
 from datetime import datetime
 from datetime import timedelta
 from pysubparser import parser
+import ass
 import sys
 import reader
 import pyperclip
@@ -58,18 +59,15 @@ class Main(wx.Frame):
         self.subtitle = ""
 
     def onTimer(self, event):
-        if sum(1 for _ in self.subtitle_handler) == 0:
-            return
-        start = self.subtitle_handler[self.index].start
-        end = self.subtitle_handler[self.index].end
-        current = datetime.fromtimestamp(self.player.get_time() / 1000.0).time()
-        if current >= start and current <= end:
-            self.queue.append(self.subtitle_handler[self.index].text)
-            if self.index < sum(1 for _ in self.subtitle_handler):
-                self.index += 1
+        for i in self.subtitle_handler.events:
+            start = i.start
+            end = i.end
+            current = timedelta(milliseconds = self.player.get_time())
+            if current >= start and current <= end:
+                self.queue.append(i.text)
 
     def onQueueTimer(self, event):
-        if len(self.queue) == 0 or self.index > len(self.queue):
+        if len(self.queue) == 0 or self.queue_index > len(self.queue) -1:
             return
         speak(self.queue[self.queue_index])
         self.queue_index += 1
@@ -132,11 +130,13 @@ class Main(wx.Frame):
         for (i, j) in self.subtitles.values():
             if i == 1:
                 self.subtitle = j
+                break
         if self.subtitle == "":
             self.subtitle = list(self.subtitles)[0][1]
-        self.subtitle_handler = parser.parse(self.subtitle)
+        #self.subtitle_handler = parser.parse(self.subtitle)
+        with open(self.subtitle, "r", encoding='utf_8_sig') as f:
+            self.subtitle_handler = ass.parse(f)
         self.timer.Start()
-        pyperclip.copy(str(self.player.video_get_spu_description()))
 
     def onPlay(self, evt):
         if self.player.get_media():
