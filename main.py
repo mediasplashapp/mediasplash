@@ -1,10 +1,10 @@
-from datetime import datetime
 from datetime import timedelta
-from pysubparser import parser
+import logging
+import platform
+import traceback
 import ass
 import sys
 import reader
-import pyperclip
 import tempfile
 import wx
 from cytolk import tolk
@@ -13,7 +13,6 @@ import os
 from enum import Enum
 import vlc
 
-sys.stderr = open('errors.log', 'w')
 os.add_dll_directory(os.path.join(os.getcwd(), "lib"))
 
 
@@ -69,15 +68,16 @@ class Main(wx.Frame):
                 continue
             start = i.start
             end = i.end
-            current = timedelta(milliseconds = self.player.get_time())
+            current = timedelta(milliseconds=self.player.get_time())
             if current >= start and current <= end:
                 self.queue.append(i.text)
             self.index = val
             self.queue_handled = False
             self.queue_timer.Start(self.delay_by)
             break
+
     def onQueueTimer(self, event):
-        if len(self.queue) == 0 or self.queue_index > len(self.queue) -1:
+        if len(self.queue) == 0 or self.queue_index > len(self.queue) - 1:
             return
         speak(self.queue[self.queue_index])
         self.queue.remove(self.queue[self.queue_index])
@@ -145,10 +145,8 @@ class Main(wx.Frame):
                 break
         if self.subtitle == "":
             self.subtitle = list(self.subtitles)[0][1]
-        #self.subtitle_handler = parser.parse(self.subtitle)
-        with open(self.subtitle, "r", encoding = "utf-8") as f:
+        with open(self.subtitle, "r", encoding="utf-8") as f:
             self.subtitle_handler = ass.parse(f)
-        #self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
         self.timer.Start()
 
     def onPlay(self, evt):
@@ -173,8 +171,27 @@ class Main(wx.Frame):
         self.player.Seek(offset)
 
 
-with tolk.tolk():
-    app = wx.App()
-    frame = Main(app)
-    frame.Show(1)
-    app.MainLoop()
+if __name__ == "__main__":
+    logging.basicConfig(
+        filename="audioslash.log",
+        filemode="w",
+        level=logging.DEBUG,
+        format="%(levelname)s: %(module)s: %(message)s: %(asctime)s",
+    )
+
+    def exchandler(type, exc, tb):
+        logging.exception(
+            "".join([str(i) for i in traceback.format_exception(type, exc, tb)])
+        )
+
+    sys.excepthook = exchandler
+    logging.info(f"running on {platform.platform()}")
+    logging.info(f"python version: {sys.version}")
+    logging.info(f"wx version: {wx.version()}")
+    logging.info(f"machine name: {platform.machine()}")
+
+    with tolk.tolk():
+        app = wx.App()
+        frame = Main(app)
+        frame.Show()
+        app.MainLoop()
