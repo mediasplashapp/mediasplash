@@ -5,7 +5,6 @@ import pyperclip
 import os
 def generate_subtitles(filename, temp_dir):
     info = subprocess.getoutput(f'ffprobe -v error  -show_entries stream -print_format json "{filename}"')
-    pyperclip.copy(info)
     data = {}
     try:
         data = json.loads(info)

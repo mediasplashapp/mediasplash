@@ -49,3 +49,4 @@ venv.bak/
 *.mkv
 *.srt
 *.exe
+*.log

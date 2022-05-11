@@ -13,6 +13,7 @@ import os
 from enum import Enum
 import vlc
 
+sys.stderr = open('errors.log', 'w')
 os.add_dll_directory(os.path.join(os.getcwd(), "lib"))
 
 
@@ -30,9 +31,11 @@ class Main(wx.Frame):
         self.app = app
         self.state = MediaState.neverPlayed
         self.timer = wx.Timer(self)
-        self.timer.Bind(wx.EVT_TIMER, self.onTimer)
+        self.Bind(wx.EVT_TIMER, self.onTimer, self.timer)
         self.queue_timer = wx.Timer(self)
-        self.queue_timer.Bind(wx.EVT_TIMER, self.onQueueTimer)
+        self.Bind(wx.EVT_TIMER, self.onQueueTimer, self.queue_timer)
+        self.subtitle_start = None
+        self.subtitle_end = None
         # The delaying period for speaking subtitles(In milliseconds.)
         self.delay_by = 0
         self.index = 0
@@ -55,22 +58,31 @@ class Main(wx.Frame):
         self.temp_dir = None
         # The list of subtitles, A dictionary with keys of value string, For the name, And values for the value tuple (Default, subtitle_path)
         self.subtitles = {}
+        self.subtitle_text = ""
         # The current subtitle file selected.
         self.subtitle = ""
+        self.queue_handled = False
 
     def onTimer(self, event):
-        for i in self.subtitle_handler.events:
+        for (val, i) in enumerate(self.subtitle_handler.events):
+            if not self.queue_handled and val == self.index:
+                continue
             start = i.start
             end = i.end
             current = timedelta(milliseconds = self.player.get_time())
             if current >= start and current <= end:
                 self.queue.append(i.text)
-
+            self.index = val
+            self.queue_handled = False
+            self.queue_timer.Start(self.delay_by)
+            break
     def onQueueTimer(self, event):
         if len(self.queue) == 0 or self.queue_index > len(self.queue) -1:
             return
         speak(self.queue[self.queue_index])
+        self.queue.remove(self.queue[self.queue_index])
         self.queue_index += 1
+        self.queue_handled = True
 
     def onClose(self, event):
         if self.temp_dir:  # Make sure to clean up the directory before closing.
@@ -134,8 +146,9 @@ class Main(wx.Frame):
         if self.subtitle == "":
             self.subtitle = list(self.subtitles)[0][1]
         #self.subtitle_handler = parser.parse(self.subtitle)
-        with open(self.subtitle, "r", encoding='utf_8_sig') as f:
+        with open(self.subtitle, "r", encoding = "utf-8") as f:
             self.subtitle_handler = ass.parse(f)
+        #self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
         self.timer.Start()
 
     def onPlay(self, evt):
