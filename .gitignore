@@ -48,3 +48,4 @@ venv.bak/
 .vscode
 *.mkv
 *.srt
+/__pycache__

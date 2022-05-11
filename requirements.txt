@@ -1,0 +1,3 @@
+wxpython
+pysubparser
+python-vlc
