@@ -1,3 +1,4 @@
 *.exe
 *.mkv
 *.srt
+/__pycache__
