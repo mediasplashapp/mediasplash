@@ -16,3 +16,16 @@ class SubtitleSelect(wx.Dialog):
         box.Add(wx.Button(self.pnl, wx.ID_OK))
         box.Add(wx.Button(self.pnl, wx.ID_CANCEL))
         self.pnl.SetSizer(box)
+
+class TextField(wx.Dialog):
+    def __init__(self, frame, title, value = ""):
+        super().__init__(frame, title = title)
+        self.pnl = wx.Panel(self)
+        box = wx.BoxSizer()
+        self.text = wx.TextCtrl(self.pnl, value = value)
+        self.okBtn = wx.Button(self.pnl, wx.ID_OK)
+        self.okBtn.SetDefault()
+        box.Add(self.text)
+        box.Add(self.okBtn)
+        box.Add(wx.Button(self.pnl, wx.ID_CANCEL))
+        self.pnl.SetSizer(box)

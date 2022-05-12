@@ -18,6 +18,8 @@ import vlc
 os.add_dll_directory(os.path.join(os.getcwd(), "lib"))
 
 
+def get_subtitle_tuple(sub):
+    return (sub.start, sub.end, sub.text)
 class MediaState(Enum):
     neverPlayed = 0
     stopped = 1
@@ -45,8 +47,6 @@ class Main(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.onTimer, self.timer)
         self.queue_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onQueueTimer, self.queue_timer)
-        self.subtitle_start = None
-        self.subtitle_end = None
         # The delaying period for speaking subtitles(In milliseconds.)
         self.delay_by = 0
         self.index = 0
@@ -73,16 +73,35 @@ class Main(wx.Frame):
         self.subtitle_text = ""
         # The current subtitle file selected.
         self.subtitle = ""
-        self.processed_events = set()
+        self.processed_events = []
 
     def onTimer(self, event):
+        if get_subtitle_tuple(self.subtitle_handler[self.index]) in self.processed_events:
+            self.check_for_subtitle()
+            return
         start = timedelta(milliseconds = self.subtitle_handler[self.index].start)
         end = timedelta(milliseconds = self.subtitle_handler[self.index].end)
         current = timedelta(milliseconds=self.player.get_time())
         if current >= start and current <= end:
             self.queue.append(self.subtitle_handler[self.index].text)
+            self.processed_events.append(get_subtitle_tuple(self.subtitle_handler[self.index]))
             self.index += 1
             self.queue_timer.Start(self.delay_by)
+            return
+        self.check_for_subtitle()
+    def check_for_subtitle(self):
+        for (val, i) in enumerate(self.subtitle_handler):
+            if get_subtitle_tuple(i) in self.processed_events:
+                continue
+            start = timedelta(milliseconds = i.start)
+            end = timedelta(milliseconds = i.end)
+            current = timedelta(milliseconds=self.player.get_time())
+            if current >= start and current <= end:
+                self.queue.append(i.text)
+                self.processed_events.append(get_subtitle_tuple(i))
+                self.index = val
+                self.queue_timer.Start(self.delay_by)
+                break
 
     def onQueueTimer(self, event):
         if len(self.queue) == 0 or self.queue_index > len(self.queue) - 1:
@@ -96,6 +115,25 @@ class Main(wx.Frame):
             final_list.append(i)
         return final_list
 
+    def delay_set(self):
+        with dialogs.TextField(self, "Define subtitle delay(In milliseconds)", value = str(self.delay_by)) as dlg:
+            r = dlg.ShowModal()
+            if r != wx.ID_OK:
+                return
+            val = dlg.text.GetValue()
+            if not val:
+                return
+            try:
+                self.delay_by = int(val)
+            except ValueError:
+                r = wx.MessageBox(
+                    "Invalid value, Must be an integer",
+                    "Error",
+                    wx.ICON_ERROR,
+                )
+                return
+            speak(f"Subtitle delay set to {self.delay_by}", True)
+
     def subtitle_select(self, event = None):
         if len(self.subtitles) == 0 or not self.subtitle_handler:
             return
@@ -105,14 +143,14 @@ class Main(wx.Frame):
                 return
             sub = dlg.subtitle_select.GetString(dlg.subtitle_select.Selection)
             if not sub:
-                r = wx.MessageBox(
+                wx.MessageBox(
                     "Aborting...",
                     "No subtitle selected",
                     wx.ICON_ERROR,
                 )
                 return
             if sub not in self.subtitles:
-                r = wx.MessageBox(
+                wx.MessageBox(
                     "There was an error while trying to parse the selected subtitle... Please try again later.",
                     "Fatal error",
                     wx.ICON_ERROR,
@@ -132,18 +170,28 @@ class Main(wx.Frame):
         self.queue.clear()
         self.queue_index = 0
         self.index = 0
+        self.processed_events.clear()
         for (val, i) in enumerate(self.subtitle_handler):
             start = timedelta(milliseconds = i.start)
             end = timedelta(milliseconds = i.end)
             current = timedelta(milliseconds=self.player.get_time())
             if current >= start and current <= end:
                 self.queue.append(i.text)
+                self.processed_events.append(get_subtitle_tuple(i))
                 self.index = val
                 self.queue_timer.Start(self.delay_by)
-                break
+                #break
 
     def onKeyPress(self, event):
         keycode = event.GetKeyCode()
+        controlDown = event.CmdDown()
+        altDown = event.AltDown()
+        shiftDown = event.ShiftDown()
+        if keycode == wx.WXK_DOWN and self.player.audio_get_volume() > 5:
+            self.player.audio_set_volume(self.player.audio_get_volume() -5)
+        if keycode == wx.WXK_UP and self.player.audio_get_volume() < 100:
+            self.player.audio_set_volume(self.player.audio_get_volume() +5)
+
         if keycode == wx.WXK_RIGHT:
             self.player.set_position(
                 (self.player.get_time() + 5000) / self.player.get_length()
@@ -156,11 +204,15 @@ class Main(wx.Frame):
             )
             self.queue_reset()
 
+        if keycode == ord("T"):
+            speak(f"{self.queue_index}, {len(self.queue)}")
         if keycode == ord("P"):
             speak(
                 f"Current position, {str(timedelta(seconds = round((self.player.get_time() / 1000))))} elapsed of {str(timedelta(seconds = round((self.player.get_length() / 1000))))}"
             )
-        if keycode == ord("S"):
+        if controlDown and keycode == ord("D"):
+            self.delay_set()
+        if controlDown and keycode == ord("S"):
             self.subtitle_select()
         if keycode == wx.WXK_SPACE:
             if self.state == MediaState.paused:
@@ -174,7 +226,7 @@ class Main(wx.Frame):
             if dlg.ShowModal() == wx.ID_OK:
                 dir = dlg.GetDirectory()
                 file = dlg.GetFilename()
-            self.doLoadFile(file, dir)
+                self.doLoadFile(file, dir)
 
     def doLoadFile(self, file, dir):
         self.onStop(None)
@@ -189,7 +241,6 @@ class Main(wx.Frame):
         self.SetTitle(title)
         self.onPlay(None)
         self.state = MediaState.playing
-        self.player.audio_set_volume(70)
         self.temp_dir = tempfile.TemporaryDirectory()
         self.subtitles = reader.generate_subtitles(
             os.path.join(dir, file), self.temp_dir
