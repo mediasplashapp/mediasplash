@@ -23,6 +23,16 @@ class MediaState(Enum):
     playing = 3
 
 
+class Subtitle:
+    def __init__(self, handle) -> None:
+        self.handle = handle
+        self.already_handled = False
+    def in_range(self, current: timedelta) -> bool:
+        return current >= self.handle.start and current <= self.handle.end
+    def speak(self):
+        speak(self.handle.text)
+        self.already_handled = True
+
 class Main(wx.Frame):
     def __init__(self, app):
         super().__init__(None, title="mediaslash")
@@ -37,7 +47,7 @@ class Main(wx.Frame):
         self.subtitle_end = None
         # The delaying period for speaking subtitles(In milliseconds.)
         self.delay_by = 0
-        self.index = 0
+        self.index = -1
         self.queue = []
         self.queue_index = 0
         self.subtitle_handler = None
@@ -87,16 +97,25 @@ class Main(wx.Frame):
             self.temp_dir.cleanup()
         wx.CallAfter(self.Destroy)
 
+    def queue_reset(self):
+        self.queue.clear()
+        self.queue_index = 0
+        self.processed_events.clear()
+        self.index = -1
+
     def onKeyPress(self, event):
         keycode = event.GetKeyCode()
         if keycode == wx.WXK_RIGHT:
             self.player.set_position(
                 (self.player.get_time() + 5000) / self.player.get_length()
             )
+            self.queue_reset()
+
         if keycode == wx.WXK_LEFT:
             self.player.set_position(
                 (self.player.get_time() - 5000) / self.player.get_length()
             )
+            self.queue_reset()
 
         if keycode == ord("p"):
             speak(
