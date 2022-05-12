@@ -41,7 +41,6 @@ class Main(wx.Frame):
         self.queue = []
         self.queue_index = 0
         self.subtitle_handler = None
-        # This exists so we can handle events, Not sure why if there's none it's just won't respond to any.
         self.panel.Bind(wx.EVT_KEY_UP, self.onKeyPress)
         self.instance = vlc.Instance("--no-video")
         self.player = self.instance.media_player_new()
@@ -60,19 +59,19 @@ class Main(wx.Frame):
         self.subtitle_text = ""
         # The current subtitle file selected.
         self.subtitle = ""
-        self.queue_handled = False
+        self.processed_events = set()
 
     def onTimer(self, event):
         for (val, i) in enumerate(self.subtitle_handler.events):
-            if not self.queue_handled and val == self.index:
+            if val == self.index or i in self.processed_events:
                 continue
             start = i.start
             end = i.end
             current = timedelta(milliseconds=self.player.get_time())
             if current >= start and current <= end:
                 self.queue.append(i.text)
+                self.processed_events.add(i)
             self.index = val
-            self.queue_handled = False
             self.queue_timer.Start(self.delay_by)
             break
 
@@ -82,12 +81,11 @@ class Main(wx.Frame):
         speak(self.queue[self.queue_index])
         self.queue.remove(self.queue[self.queue_index])
         self.queue_index += 1
-        self.queue_handled = True
 
     def onClose(self, event):
         if self.temp_dir:  # Make sure to clean up the directory before closing.
             self.temp_dir.cleanup()
-        sys.exit()
+        wx.CallAfter(self.Destroy)
 
     def onKeyPress(self, event):
         keycode = event.GetKeyCode()
@@ -110,8 +108,6 @@ class Main(wx.Frame):
                 self.player.play()
             else:
                 self.player.pause()
-        if keycode == wx.WXK_CONTROL_O:
-            self.onLoadFile()
         event.Skip()
 
     def onLoadFile(self, evt):
@@ -169,6 +165,7 @@ class Main(wx.Frame):
 
     def seek(self, offset):
         self.player.Seek(offset)
+        self.processed_events.clear()
 
 
 if __name__ == "__main__":
