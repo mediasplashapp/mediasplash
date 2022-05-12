@@ -1,8 +1,10 @@
 from datetime import timedelta
 import logging
+import dialogs
 import platform
+import pyperclip
 import traceback
-import ass
+import pysubs2
 import sys
 import reader
 import tempfile
@@ -47,7 +49,7 @@ class Main(wx.Frame):
         self.subtitle_end = None
         # The delaying period for speaking subtitles(In milliseconds.)
         self.delay_by = 0
-        self.index = -1
+        self.index = 0
         self.queue = []
         self.queue_index = 0
         self.subtitle_handler = None
@@ -58,9 +60,11 @@ class Main(wx.Frame):
         self.menubar = wx.MenuBar()
         self.fileMenu = wx.Menu()
         self.fileOpen = self.fileMenu.Append(wx.ID_OPEN)
+        self.subtitleSelectMenu = self.fileMenu.Append(wx.ID_ANY, "Change subtitle.")
         self.menubar.Append(self.fileMenu, "&file")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
+        self.Bind(wx.EVT_MENU, self.subtitle_select, self.subtitleSelectMenu)
         self.Bind(wx.EVT_CLOSE, self.onClose)
         # Temporary directory, For storing extracted subtitles from media, If any.
         self.temp_dir = None
@@ -72,25 +76,50 @@ class Main(wx.Frame):
         self.processed_events = set()
 
     def onTimer(self, event):
-        for (val, i) in enumerate(self.subtitle_handler.events):
-            if val == self.index or i in self.processed_events:
-                continue
-            start = i.start
-            end = i.end
-            current = timedelta(milliseconds=self.player.get_time())
-            if current >= start and current <= end:
-                self.queue.append(i.text)
-                self.processed_events.add(i)
-            self.index = val
+        start = timedelta(milliseconds = self.subtitle_handler[self.index].start)
+        end = timedelta(milliseconds = self.subtitle_handler[self.index].end)
+        current = timedelta(milliseconds=self.player.get_time())
+        if current >= start and current <= end:
+            self.queue.append(self.subtitle_handler[self.index].text)
+            self.index += 1
             self.queue_timer.Start(self.delay_by)
-            break
 
     def onQueueTimer(self, event):
         if len(self.queue) == 0 or self.queue_index > len(self.queue) - 1:
             return
         speak(self.queue[self.queue_index])
         self.queue.remove(self.queue[self.queue_index])
-        self.queue_index += 1
+
+    def stringify_subtitles(self):
+        final_list = []
+        for i in self.subtitles:
+            final_list.append(i)
+        return final_list
+
+    def subtitle_select(self, event = None):
+        if len(self.subtitles) == 0 or not self.subtitle_handler:
+            return
+        with dialogs.SubtitleSelect(self) as dlg:
+            r = dlg.ShowModal()
+            if r != wx.ID_OK:
+                return
+            sub = dlg.subtitle_select.GetString(dlg.subtitle_select.Selection)
+            if not sub:
+                r = wx.MessageBox(
+                    "Aborting...",
+                    "No subtitle selected",
+                    wx.ICON_ERROR,
+                )
+                return
+            if sub not in self.subtitles:
+                r = wx.MessageBox(
+                    "There was an error while trying to parse the selected subtitle... Please try again later.",
+                    "Fatal error",
+                    wx.ICON_ERROR,
+                )
+                return
+            self.subtitle = self.subtitles[sub][1]
+            self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
 
     def onClose(self, event):
         if self.temp_dir:  # Make sure to clean up the directory before closing.
@@ -98,10 +127,20 @@ class Main(wx.Frame):
         wx.CallAfter(self.Destroy)
 
     def queue_reset(self):
+        if len(self.subtitles) == 0 or not self.subtitle_handler or len(self.subtitle_handler) == 0:
+            return
         self.queue.clear()
         self.queue_index = 0
-        self.processed_events.clear()
-        self.index = -1
+        self.index = 0
+        for (val, i) in enumerate(self.subtitle_handler):
+            start = timedelta(milliseconds = i.start)
+            end = timedelta(milliseconds = i.end)
+            current = timedelta(milliseconds=self.player.get_time())
+            if current >= start and current <= end:
+                self.queue.append(i.text)
+                self.index = val
+                self.queue_timer.Start(self.delay_by)
+                break
 
     def onKeyPress(self, event):
         keycode = event.GetKeyCode()
@@ -117,11 +156,12 @@ class Main(wx.Frame):
             )
             self.queue_reset()
 
-        if keycode == ord("p"):
+        if keycode == "p":
             speak(
                 f"Current position, {str(timedelta(seconds = round((self.player.get_time() / 1000))))} elapsed of {str(timedelta(seconds = round((self.player.get_length() / 1000))))}"
             )
-
+        if keycode == wx.WXK_CONTROL_S:
+            self.subtitle_select()
         if keycode == wx.WXK_SPACE:
             if self.state == MediaState.paused:
                 self.player.play()
@@ -160,8 +200,9 @@ class Main(wx.Frame):
                 break
         if self.subtitle == "":
             self.subtitle = list(self.subtitles)[0][1]
-        with open(self.subtitle, "r", encoding="utf-8") as f:
-            self.subtitle_handler = ass.parse(f)
+        #with open(self.subtitle, "r", encoding="utf-8") as f:
+        #    self.subtitle_handler = ass.parse(f)
+        self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
         self.timer.Start()
 
     def onPlay(self, evt):
@@ -179,12 +220,12 @@ class Main(wx.Frame):
             self.state = MediaState.paused
 
     def onStop(self, evt):
+        self.queue_reset()
         if self.player.get_media():
             self.player.stop()
 
     def seek(self, offset):
         self.player.Seek(offset)
-        self.processed_events.clear()
 
 
 if __name__ == "__main__":
@@ -205,7 +246,7 @@ if __name__ == "__main__":
     logging.info(f"python version: {sys.version}")
     logging.info(f"wx version: {wx.version()}")
     logging.info(f"machine name: {platform.machine()}")
-
+    
     with tolk.tolk():
         app = wx.App()
         frame = Main(app)
