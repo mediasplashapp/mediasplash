@@ -156,11 +156,11 @@ class Main(wx.Frame):
             )
             self.queue_reset()
 
-        if keycode == "p":
+        if keycode == ord("P"):
             speak(
                 f"Current position, {str(timedelta(seconds = round((self.player.get_time() / 1000))))} elapsed of {str(timedelta(seconds = round((self.player.get_length() / 1000))))}"
             )
-        if keycode == wx.WXK_CONTROL_S:
+        if keycode == ord("S"):
             self.subtitle_select()
         if keycode == wx.WXK_SPACE:
             if self.state == MediaState.paused:
