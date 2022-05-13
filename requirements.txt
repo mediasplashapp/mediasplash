@@ -1,4 +1,4 @@
 wxpython
 cytolk
-ass
+pysubs2
 python-vlc
