@@ -19,6 +19,17 @@ import vlc
 
 os.add_dll_directory(os.path.join(os.getcwd(), "lib"))
 
+supported_subtitles = (".ass", ".ssa", ".srt")
+
+def check_for_similar_subtitles(dir, file):
+    p = Path(os.path.join(dir, file))
+    final = {}
+    filename = p.stem
+    for i in supported_subtitles:
+        if p.with_suffix(i).exists():
+            final[filename] = (0, f"{os.path.join(dir, filename)}{i}")
+            clean(f"{os.path.join(dir, filename)}{i}")
+    return final
 
 def get_subtitle_tuple(sub):
     return (sub.start, sub.end, sub.text)
@@ -57,6 +68,9 @@ class MediaPanel(wx.Panel):
         self.temp_dir = None
 
     def onTimer(self, event):
+        if self.player.get_state() == vlc.State.Ended:
+            self.onStop(None)
+            return
         if get_subtitle_tuple(self.subtitle_handler[self.index]) in self.processed_events:
             self.check_for_subtitle()
             return
@@ -190,6 +204,10 @@ class MediaPanel(wx.Panel):
                 break
         if len(self.subtitles) > 0 and self.subtitle == "":
             self.subtitle = list(self.subtitles)[0][1]
+        external_subs = check_for_similar_subtitles(dir, file)
+        if len(external_subs) > 0:
+            self.subtitles.update(external_subs)
+            self.subtitle = next(iter(external_subs.items()))[1][1]
         #with open(self.subtitle, "r", encoding="utf-8") as f:
         #    self.subtitle_handler = ass.parse(f)
         self.subtitle_handler = pysubs2.load(self.subtitle, encoding = "utf-8")
@@ -222,7 +240,8 @@ class Main(wx.Frame):
         super().__init__(None, title="mediaslash")
         self.panel = MediaPanel(self)
         self.app = app
-        self.panel.Bind(wx.EVT_KEY_UP, self.onKeyPress)
+        #self.panel.Bind(wx.EVT_KEY_DOWN, self.onKeyPress)
+        self.panel.Bind(wx.EVT_CHAR_HOOK, self.onKeyHook)
         self.menubar = wx.MenuBar()
         self.fileMenu = wx.Menu()
         self.fileOpen = self.fileMenu.Append(wx.ID_OPEN)
@@ -242,16 +261,15 @@ class Main(wx.Frame):
             self.panel.temp_dir.cleanup()
         wx.CallAfter(self.Destroy)
 
-
-    def onKeyPress(self, event):
+    def onKeyHook(self, event):
         keycode = event.GetKeyCode()
         controlDown = event.CmdDown()
         altDown = event.AltDown()
         shiftDown = event.ShiftDown()
         if keycode == wx.WXK_DOWN and self.panel.player.audio_get_volume() > 5:
-            self.panel.player.audio_set_volume(self.player.audio_get_volume() -5)
+            self.panel.player.audio_set_volume(self.panel.player.audio_get_volume() -5)
         if keycode == wx.WXK_UP and self.panel.player.audio_get_volume() < 100:
-            self.panel.player.audio_set_volume(self.player.audio_get_volume() +5)
+            self.panel.player.audio_set_volume(self.panel.player.audio_get_volume() +5)
 
         if keycode == wx.WXK_RIGHT:
             self.panel.player.set_position(
@@ -264,7 +282,6 @@ class Main(wx.Frame):
                 (self.panel.player.get_time() - 5000) / self.panel.player.get_length()
             )
             self.panel.queue_reset()
-
         if keycode == ord("P"):
             speak(
                 f"Current position, {str(timedelta(seconds = round((self.panel.player.get_time() / 1000))))} elapsed of {str(timedelta(seconds = round((self.panel.player.get_length() / 1000))))}"
@@ -279,6 +296,8 @@ class Main(wx.Frame):
             else:
                 self.panel.onPause()
         event.Skip()
+
+
 
     def onLoadFile(self, evt):
         with wx.FileDialog(self, "Select a media file") as dlg:
