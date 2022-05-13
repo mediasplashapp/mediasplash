@@ -1,5 +1,7 @@
 from datetime import timedelta
 import logging
+from pathlib import Path
+from cleaner import clean
 import dialogs
 import platform
 import pyperclip
@@ -83,7 +85,7 @@ class MediaPanel(wx.Panel):
     def onQueueTimer(self, event):
         if len(self.queue) == 0 or self.queue_index > len(self.queue) - 1:
             return
-        speak(self.queue[self.queue_index])
+        speak(self.queue[self.queue_index].replace(r"\N", "\n"))
         self.queue.remove(self.queue[self.queue_index])
 
     def stringify_subtitles(self):
@@ -134,7 +136,7 @@ class MediaPanel(wx.Panel):
                 )
                 return
             self.subtitle = self.subtitles[sub][1]
-            self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
+            self.subtitle_handler = pysubs2.load(self.subtitle, encoding = "utf-8")
 
     def queue_reset(self):
         if len(self.subtitles) == 0 or not self.subtitle_handler or len(self.subtitle_handler) == 0:
@@ -151,6 +153,19 @@ class MediaPanel(wx.Panel):
                 self.queue.append(i.text)
                 self.processed_events.append(get_subtitle_tuple(i))
                 self.index = val
+
+    def doLoadSubtitle(self, file, dir):
+        clean(os.path.join(dir, file))
+        try:
+            self.subtitle_handler = pysubs2.load(os.path.join(dir, file), encoding = "utf-8")
+        except:
+            r = wx.MessageBox(
+                "That file couldn't be loaded. Make sure it's a supported format and try again.",
+                "File couldn't be loaded",
+                wx.ICON_ERROR,
+            )
+            return
+        self.subtitles[file] = (0, os.path.join(dir, file))
 
     def doLoadFile(self, file, dir):
         self.onStop(None)
@@ -177,7 +192,7 @@ class MediaPanel(wx.Panel):
             self.subtitle = list(self.subtitles)[0][1]
         #with open(self.subtitle, "r", encoding="utf-8") as f:
         #    self.subtitle_handler = ass.parse(f)
-        self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
+        self.subtitle_handler = pysubs2.load(self.subtitle, encoding = "utf-8")
         self.timer.Start()
         self.queue_timer.Start()
 
@@ -217,7 +232,10 @@ class Main(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
         self.Bind(wx.EVT_MENU, self.panel.subtitle_select, self.subtitleSelectMenu)
         self.Bind(wx.EVT_CLOSE, self.onClose)
-
+        self.table = wx.NewId()
+        self.Bind(wx.EVT_MENU, self.onLoadSubtitle, id = self.table)
+        accel_tbl = wx.AcceleratorTable([(wx.ACCEL_ALT, ord('O'), self.table)])
+        self.SetAcceleratorTable(accel_tbl)
 
     def onClose(self, event):
         if self.panel.temp_dir:  # Make sure to clean up the directory before closing.
@@ -268,6 +286,13 @@ class Main(wx.Frame):
                 dir = dlg.GetDirectory()
                 file = dlg.GetFilename()
                 self.panel.doLoadFile(file, dir)
+
+    def onLoadSubtitle(self, evt):
+        with wx.FileDialog(self, "Select a subtitle file") as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                dir = dlg.GetDirectory()
+                file = dlg.GetFilename()
+                self.panel.doLoadSubtitle(file, dir)
 
 
 if __name__ == "__main__":
