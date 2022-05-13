@@ -76,10 +76,10 @@ class Main(wx.Frame):
         self.processed_events = []
 
     def onTimer(self, event):
-        if get_subtitle_tuple(self.subtitle_handler[self.index]) in self.processed_events:
+        if get_subtitle_tuple(self.subtitle_handler.events[self.index]) in self.processed_events:
             self.check_for_subtitle()
             return
-        start = timedelta(milliseconds = self.subtitle_handler[self.index].start)
+        start = timedelta(milliseconds = self.subtitle_handler.events[self.index].start)
         end = timedelta(milliseconds = self.subtitle_handler[self.index].end)
         current = timedelta(milliseconds=self.player.get_time())
         if current >= start and current <= end:
@@ -238,7 +238,7 @@ class Main(wx.Frame):
             self.temp_dir = None
         if (title := self.player.get_title()) == -1:
             title = file
-        self.SetTitle(title)
+        self.SetTitle(f"{title} mediaslash")
         self.onPlay(None)
         self.state = MediaState.playing
         self.temp_dir = tempfile.TemporaryDirectory()
