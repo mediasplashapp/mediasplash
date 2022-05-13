@@ -20,6 +20,7 @@ os.add_dll_directory(os.path.join(os.getcwd(), "lib"))
 
 def get_subtitle_tuple(sub):
     return (sub.start, sub.end, sub.text)
+
 class MediaState(Enum):
     neverPlayed = 0
     stopped = 1
@@ -75,32 +76,31 @@ class Main(wx.Frame):
         self.subtitle = ""
         self.processed_events = []
 
+
     def onTimer(self, event):
-        if get_subtitle_tuple(self.subtitle_handler.events[self.index]) in self.processed_events:
+        if get_subtitle_tuple(self.subtitle_handler[self.index]) in self.processed_events:
             self.check_for_subtitle()
             return
-        start = timedelta(milliseconds = self.subtitle_handler.events[self.index].start)
-        end = timedelta(milliseconds = self.subtitle_handler[self.index].end)
+        start = timedelta(milliseconds = self.subtitle_handler.events[self.index].start + self.delay_by)
+        end = timedelta(milliseconds = self.subtitle_handler[self.index].end + self.delay_by)
         current = timedelta(milliseconds=self.player.get_time())
         if current >= start and current <= end:
             self.queue.append(self.subtitle_handler[self.index].text)
             self.processed_events.append(get_subtitle_tuple(self.subtitle_handler[self.index]))
             self.index += 1
-            self.queue_timer.Start(self.delay_by)
             return
         self.check_for_subtitle()
     def check_for_subtitle(self):
         for (val, i) in enumerate(self.subtitle_handler):
             if get_subtitle_tuple(i) in self.processed_events:
                 continue
-            start = timedelta(milliseconds = i.start)
-            end = timedelta(milliseconds = i.end)
+            start = timedelta(milliseconds = i.start + self.delay_by)
+            end = timedelta(milliseconds = i.end + self.delay_by)
             current = timedelta(milliseconds=self.player.get_time())
             if current >= start and current <= end:
                 self.queue.append(i.text)
                 self.processed_events.append(get_subtitle_tuple(i))
                 self.index = val
-                self.queue_timer.Start(self.delay_by)
                 break
 
     def onQueueTimer(self, event):
@@ -172,14 +172,13 @@ class Main(wx.Frame):
         self.index = 0
         self.processed_events.clear()
         for (val, i) in enumerate(self.subtitle_handler):
-            start = timedelta(milliseconds = i.start)
-            end = timedelta(milliseconds = i.end)
+            start = timedelta(milliseconds = i.start + self.delay_by)
+            end = timedelta(milliseconds = i.end + self.delay_by)
             current = timedelta(milliseconds=self.player.get_time())
             if current >= start and current <= end:
                 self.queue.append(i.text)
                 self.processed_events.append(get_subtitle_tuple(i))
                 self.index = val
-                self.queue_timer.Start(self.delay_by)
                 #break
 
     def onKeyPress(self, event):
