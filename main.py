@@ -2,6 +2,7 @@ from datetime import timedelta
 import logging
 from pathlib import Path
 from cleaner import clean
+from data_manager import DataManager as dm
 import dialogs
 import platform
 import pyperclip
@@ -66,7 +67,16 @@ class MediaPanel(wx.Panel):
         self.processed_events = []
         # Temporary directory, For storing extracted subtitles from media, If any.
         self.temp_dir = None
+        self.data = dm("config.json")
+        self.load()
 
+    def load(self):
+        self.data.load()
+        if self.data.exists("subtitle_delay"):
+            self.delay_by = int(self.data.get("subtitle_delay"))
+    def save(self):
+        self.data.add("subtitle_delay", self.delay_by)
+        self.data.save()
     def onTimer(self, event):
         if self.player.get_state() == vlc.State.Ended:
             self.onStop(None)
@@ -189,7 +199,8 @@ class MediaPanel(wx.Panel):
         if self.temp_dir:
             self.temp_dir.cleanup()
             self.temp_dir = None
-        if (title := self.player.get_title()) == -1:
+        title = self.player.get_title()
+        if title == -1:
             title = file
         self.frame.SetTitle(f"{title} mediaslash")
         self.onPlay(None)
@@ -244,12 +255,18 @@ class Main(wx.Frame):
         self.panel.Bind(wx.EVT_CHAR_HOOK, self.onKeyHook)
         self.menubar = wx.MenuBar()
         self.fileMenu = wx.Menu()
+        self.Centre()
+        self.Maximize(True)
+        self.SetBackgroundColour(wx.BLACK)
         self.fileOpen = self.fileMenu.Append(wx.ID_OPEN)
         self.subtitleSelectMenu = self.fileMenu.Append(wx.ID_ANY, "Change subtitle.")
+        self.subtitleOpen = self.fileMenu.Append(wx.ID_ANY, "Open subtitle")
         self.menubar.Append(self.fileMenu, "&file")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
         self.Bind(wx.EVT_MENU, self.panel.subtitle_select, self.subtitleSelectMenu)
+        self.Bind(wx.EVT_MENU, self.onLoadSubtitle, self.subtitleOpen)
+
         self.Bind(wx.EVT_CLOSE, self.onClose)
         self.table = wx.NewId()
         self.Bind(wx.EVT_MENU, self.onLoadSubtitle, id = self.table)
@@ -257,6 +274,7 @@ class Main(wx.Frame):
         self.SetAcceleratorTable(accel_tbl)
 
     def onClose(self, event):
+        self.panel.save()
         if self.panel.temp_dir:  # Make sure to clean up the directory before closing.
             self.panel.temp_dir.cleanup()
         wx.CallAfter(self.Destroy)
@@ -272,16 +290,30 @@ class Main(wx.Frame):
             self.panel.player.audio_set_volume(self.panel.player.audio_get_volume() +5)
 
         if keycode == wx.WXK_RIGHT:
+            val = 5000
+            if altDown:
+                val = 60000
+            if controlDown:
+                val = 30000
             self.panel.player.set_position(
-                (self.panel.player.get_time() + 5000) / self.panel.player.get_length()
+                (self.panel.player.get_time() + val) / self.panel.player.get_length()
             )
             self.panel.queue_reset()
 
         if keycode == wx.WXK_LEFT:
+            val = 5000
+            if altDown:
+                val = 60000
+            if controlDown:
+                val = 30000
             self.panel.player.set_position(
-                (self.panel.player.get_time() - 5000) / self.panel.player.get_length()
+                (self.panel.player.get_time() - val) / self.panel.player.get_length()
             )
             self.panel.queue_reset()
+        if keycode == wx.WXK_HOME:
+            self.panel.player.set_position(0)
+            self.panel.queue_reset()
+
         if keycode == ord("P"):
             speak(
                 f"Current position, {str(timedelta(seconds = round((self.panel.player.get_time() / 1000))))} elapsed of {str(timedelta(seconds = round((self.panel.player.get_length() / 1000))))}"
@@ -315,8 +347,10 @@ class Main(wx.Frame):
 
 
 if __name__ == "__main__":
+    main()
+def main():
     logging.basicConfig(
-        filename="audioslash.log",
+        filename="mediaslash.log",
         filemode="w",
         level=logging.DEBUG,
         format="%(levelname)s: %(module)s: %(message)s: %(asctime)s",
@@ -333,7 +367,7 @@ if __name__ == "__main__":
     logging.info(f"wx version: {wx.version()}")
     logging.info(f"machine name: {platform.machine()}")
     
-    with tolk.tolk():
+    with tolk.tolk(False):
         app = wx.App()
         frame = Main(app)
         frame.Show()

@@ -50,3 +50,9 @@ venv.bak/
 *.srt
 *.exe
 *.log
+*.json
+*.pyd
+*.c
+mediaslash.build/
+mediaslash.dist/
+mediaslash.onefile-build/
