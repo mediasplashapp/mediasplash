@@ -1,1 +1,1 @@
-nuitka mediaslash.pyw --windows-disable-console --onefile --nofollow-import-to=PyQt5 --user-plugin=CytolkPlugin.py
+nuitka mediaslash.pyw --windows-disable-console --onefile --standalone --user-plugin=CytolkPlugin.py
