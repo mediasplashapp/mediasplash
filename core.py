@@ -49,14 +49,16 @@ class Main(wx.Frame):
         controlDown = event.CmdDown()
         altDown = event.AltDown()
         shiftDown = event.ShiftDown()
-        if keycode == wx.WXK_DOWN and self.mpanel.player.audio_get_volume() > 5:
+        if keycode == wx.WXK_DOWN and self.mpanel.player.audio_get_volume() > 0:
             self.mpanel.player.audio_set_volume(
                 self.mpanel.player.audio_get_volume() - 5
             )
+            speak(f"{self.mpanel.player.audio_get_volume()}%")
         if keycode == wx.WXK_UP and self.mpanel.player.audio_get_volume() < 200:
             self.mpanel.player.audio_set_volume(
                 self.mpanel.player.audio_get_volume() + 5
             )
+            speak(f"{self.mpanel.player.audio_get_volume()}%")
 
         if keycode == wx.WXK_RIGHT:
             val = 5000
@@ -113,6 +115,18 @@ class Main(wx.Frame):
                 self.mpanel.doLoadSubtitle(file, dir)
 
 
+class LogRedirector:
+    def __init__(self, level):
+        self.level = level
+
+    def write(self, text):
+        if text.strip():
+            self.level(text)
+
+    def flush(self):
+        pass
+
+
 def main():
     logging.basicConfig(
         filename="mediaslash.log",
@@ -127,6 +141,8 @@ def main():
         )
 
     sys.excepthook = exchandler
+    sys.stderr = LogRedirector(logging.warning)
+    sys.stdout = LogRedirector(logging.info)
     logging.info(f"running on {platform.platform()}")
     logging.info(f"python version: {sys.version}")
     logging.info(f"wx version: {wx.version()}")
