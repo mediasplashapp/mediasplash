@@ -191,6 +191,8 @@ class MediaPanel(wx.Panel):
             )
             return
         self.subtitles[file] = (0, os.path.join(dir, file))
+        self.timer.Start()
+        self.queue_timer.Start()
 
     def doLoadFile(self, file, dir):
         self.onStop(None)
@@ -222,7 +224,8 @@ class MediaPanel(wx.Panel):
             self.subtitle = next(iter(external_subs.items()))[1][1]
         #with open(self.subtitle, "r", encoding="utf-8") as f:
         #    self.subtitle_handler = ass.parse(f)
-        self.subtitle_handler = pysubs2.load(self.subtitle, encoding = "utf-8")
+        if os.path.isfile(self.subtitle):
+            self.subtitle_handler = pysubs2.load(self.subtitle, encoding = "utf-8")
         self.timer.Start()
         self.queue_timer.Start()
 
