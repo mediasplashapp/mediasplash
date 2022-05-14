@@ -53,6 +53,6 @@ venv.bak/
 *.json
 *.pyd
 *.c
-mediaslash.build/
-mediaslash.dist/
-mediaslash.onefile-build/
+/mediaslash.build
+/mediaslash.dist
+/mediaslash.onefile-build
