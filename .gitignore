@@ -56,3 +56,4 @@ venv.bak/
 /mediaslash.build
 /mediaslash.dist
 /mediaslash.onefile-build
+*.dll

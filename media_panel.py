@@ -215,10 +215,10 @@ class MediaPanel(wx.Panel):
         if len(external_subs) > 0:
             self.subtitles.update(external_subs)
             self.subtitle = next(iter(external_subs.items()))[1][1]
-        if os.path.isfile(self.subtitle):
-            self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
-            self.timer.Start()
-            self.queue_timer.Start()
+        #if os.path.isfile(self.subtitle):
+        self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
+        self.timer.Start()
+        self.queue_timer.Start()
 
     def onPlay(self, evt=None):
         if self.player.get_media():
