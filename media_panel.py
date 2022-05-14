@@ -104,25 +104,14 @@ class MediaPanel(wx.Panel):
         return final_list
 
     def delay_set(self):
-        with dialogs.TextField(
+        with dialogs.SubDelay(
             self, "Define subtitle delay(In milliseconds)", value=str(self.delay_by)
         ) as dlg:
             r = dlg.ShowModal()
-            if r != wx.ID_OK:
-                return
-            val = dlg.text.GetValue()
-            if not val:
-                return
-            try:
+            if r == wx.ID_OK:
+                val = dlg.spin.GetValue()
                 self.delay_by = int(val)
-            except ValueError:
-                r = wx.MessageBox(
-                    "Invalid value, Must be an integer",
-                    "Error",
-                    wx.ICON_ERROR,
-                )
-                return
-            speak(f"Subtitle delay set to {self.delay_by}", True)
+                speak(f"Subtitle delay set to {self.delay_by}", True)
 
     def subtitle_select(self, event=None):
         if len(self.subtitles) == 0 or not self.subtitle_handler:
@@ -215,7 +204,7 @@ class MediaPanel(wx.Panel):
         if len(external_subs) > 0:
             self.subtitles.update(external_subs)
             self.subtitle = next(iter(external_subs.items()))[1][1]
-        #if os.path.isfile(self.subtitle):
+        # if os.path.isfile(self.subtitle):
         self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
         self.timer.Start()
         self.queue_timer.Start()
