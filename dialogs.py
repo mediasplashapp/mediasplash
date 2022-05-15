@@ -26,3 +26,4 @@ class SubDelay(wx.Dialog):
         box.Add(self.spin)
         box.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL))
         self.SetSizer(box)
+        self.spin.SetFocus()

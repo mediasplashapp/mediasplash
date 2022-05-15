@@ -12,7 +12,6 @@ import wx
 import os
 import vlc
 
-
 class MediaPanel(wx.Panel):
     def __init__(self, frame):
         super().__init__(frame)
@@ -39,22 +38,12 @@ class MediaPanel(wx.Panel):
         self.processed_events = []
         # Temporary directory, For storing extracted subtitles from media, If any.
         self.temp_dir = None
-        self.data = dm("config.json")
-        self.load()
-
-    def load(self):
-        self.data.load()
-
-        if self.data.exists("subtitle_delay"):
-            self.delay_by = int(self.data.get("subtitle_delay"))
-
-    def save(self):
-        self.data.add("subtitle_delay", self.delay_by)
-        self.data.save()
 
     def onTimer(self, event):
         if self.player.get_state() == vlc.State.Ended:
             self.onStop(None)
+            return
+        if self.index >= len(self.subtitle_handler) -1:
             return
         if (
             utils.get_subtitle_tuple(self.subtitle_handler[self.index])
@@ -94,7 +83,11 @@ class MediaPanel(wx.Panel):
     def onQueueTimer(self, event):
         if len(self.queue) == 0 or self.queue_index > len(self.queue) - 1:
             return
-        speak(self.queue[self.queue_index].replace(r"\N", "\n"))
+        text = self.queue[self.queue_index].replace(r"\N", "\n")
+        if text == "":
+            self.queue.remove(self.queue[self.queue_index])
+            return
+        speak(text)
         self.queue.remove(self.queue[self.queue_index])
 
     def stringify_subtitles(self):

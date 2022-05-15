@@ -1,5 +1,6 @@
 from datetime import timedelta
 from media_panel import MediaPanel
+from data_manager import DataManager as dm
 import logging
 import utils
 import platform
@@ -37,9 +38,20 @@ class Main(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onLoadSubtitle, id=self.table)
         accel_tbl = wx.AcceleratorTable([(wx.ACCEL_ALT, ord("O"), self.table)])
         self.SetAcceleratorTable(accel_tbl)
+        self.data = dm("config.json")
+        self.load()
+
+    def load(self):
+        self.data.load()
+        if self.data.exists("subtitle_delay"):
+            self.mpanel.delay_by = int(self.data.get("subtitle_delay"))
+
+    def save(self):
+        self.data.add("subtitle_delay", self.mpanel.delay_by)
+        self.data.save()
 
     def onClose(self, event):
-        self.mpanel.save()
+        self.save()
         if self.mpanel.temp_dir:  # Make sure to clean up the directory before closing.
             self.mpanel.temp_dir.cleanup()
         wx.CallAfter(self.Destroy)
@@ -148,7 +160,8 @@ def main():
     logging.info(f"wx version: {wx.version()}")
     logging.info(f"machine name: {platform.machine()}")
 
-    with tolk.tolk(False):
+    compiled = getattr(locals(), "__compiled__", False)
+    with tolk.tolk(not compiled):
         app = wx.App()
         frame = Main(app)
         frame.Show()
