@@ -102,7 +102,7 @@ class MediaPanel(wx.Panel):
         ) as dlg:
             r = dlg.ShowModal()
             if r == wx.ID_OK:
-                val = dlg.spin.GetValue()
+                val = dlg.intctrl.GetValue()
                 self.delay_by = int(val)
                 speak(f"Subtitle delay set to {self.delay_by}", True)
 

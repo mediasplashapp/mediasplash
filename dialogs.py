@@ -1,4 +1,5 @@
 import wx
+from wx.lib.intctrl import IntCtrl
 
 
 class SubtitleSelect(wx.Dialog):
@@ -20,10 +21,8 @@ class SubDelay(wx.Dialog):
     def __init__(self, frame, title, value):
         super().__init__(frame, title=title)
         box = wx.BoxSizer()
-        self.spin = wx.SpinCtrl(self)
-        self.spin.SetRange(-360000, 360000)
-        self.spin.SetValue(value)
-        box.Add(self.spin)
+        self.intctrl = IntCtrl(self, value = int(value), allow_none = False)
+        box.Add(self.intctrl)
         box.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL))
         self.SetSizer(box)
-        self.spin.SetFocus()
+        self.intctrl.SetFocus()
