@@ -15,6 +15,8 @@ import vlc
 class MediaPanel(wx.Panel):
     def __init__(self, frame):
         super().__init__(frame)
+        self.SetLabel("Media controls")
+        self.SetBackgroundColour(wx.BLACK)
         self.frame = frame
         self.state = utils.MediaState.neverPlayed
         self.instance = vlc.Instance("--no-video")

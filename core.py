@@ -124,7 +124,10 @@ class Main(wx.Frame):
                 self.mpanel.doLoadFile(file, dir)
 
     def onLoadSubtitle(self, evt):
-        with wx.FileDialog(self, "Select a subtitle file") as dlg:
+        with wx.FileDialog(self, 
+            wildcard="Subtitle files (*.srt;*.ass;*.ssa)|*.srt;*.ass;*.ssa",
+            message = "Select a subtitle file"
+        ) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 dir = dlg.GetDirectory()
                 file = dlg.GetFilename()
