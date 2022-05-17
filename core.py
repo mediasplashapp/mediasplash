@@ -23,21 +23,23 @@ class Main(wx.Frame):
         self.menubar = wx.MenuBar()
         self.fileMenu = wx.Menu()
         self.Centre()
-        self.Maximize(True)
         self.fileOpen = self.fileMenu.Append(wx.ID_OPEN)
-        self.subtitleSelectMenu = self.fileMenu.Append(wx.ID_ANY, "Change subtitle.")
-        self.subtitleOpen = self.fileMenu.Append(wx.ID_ANY, "Open subtitle")
+        self.subtitleSelectMenu = self.fileMenu.Append(
+            wx.ID_ANY, "Change subtitle.\tAlt+C"
+        )
+        self.subtitleOpen = self.fileMenu.Append(wx.ID_ANY, "Open subtitle...\tAlt+O")
+        self.subDelay = self.fileMenu.Append(
+            wx.ID_ANY, "Change subtitle delay...\tAlt+D"
+        )
+        self.exit_item = self.fileMenu.Append(wx.ID_EXIT, "Quit\tCtrl+Q")
         self.menubar.Append(self.fileMenu, "&file")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
         self.Bind(wx.EVT_MENU, self.mpanel.subtitle_select, self.subtitleSelectMenu)
         self.Bind(wx.EVT_MENU, self.onLoadSubtitle, self.subtitleOpen)
-
+        self.Bind(wx.EVT_MENU, lambda event: self.mpanel.delay_set(), self.subDelay)
+        self.Bind(wx.EVT_MENU, lambda event: self.Close(), self.exit_item)
         self.Bind(wx.EVT_CLOSE, self.onClose)
-        self.table = wx.NewIdRef()
-        self.Bind(wx.EVT_MENU, self.onLoadSubtitle, id=self.table)
-        accel_tbl = wx.AcceleratorTable([(wx.ACCEL_ALT, ord("O"), self.table)])
-        self.SetAcceleratorTable(accel_tbl)
         self.data = dm("config.json")
         self.load()
 
@@ -54,6 +56,11 @@ class Main(wx.Frame):
         self.save()
         if self.mpanel.temp_dir:  # Make sure to clean up the directory before closing.
             self.mpanel.temp_dir.cleanup()
+        self.mpanel.onStop(None)
+        if self.mpanel.media:
+            self.mpanel.media.release()
+        self.mpanel.player.release()
+        self.mpanel.instance.release()
         wx.CallAfter(self.Destroy)
 
     def onKeyHook(self, event):
@@ -101,16 +108,13 @@ class Main(wx.Frame):
             speak(
                 f"Current position, {str(timedelta(seconds = round((self.mpanel.player.get_time() / 1000))))} elapsed of {str(timedelta(seconds = round((self.mpanel.player.get_length() / 1000))))}"
             )
-        if controlDown and keycode == ord("D"):
-            self.mpanel.delay_set()
-        if controlDown and keycode == ord("S"):
-            self.mpanel.subtitle_select()
         if keycode == wx.WXK_SPACE:
             if self.mpanel.state == utils.MediaState.paused:
                 self.mpanel.onPlay()
             else:
                 self.mpanel.onPause()
-        event.Skip()
+        else:
+            event.Skip()
 
     def onLoadFile(self, evt):
         with wx.FileDialog(self, "Select a media file") as dlg:

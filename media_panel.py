@@ -3,7 +3,6 @@ import logging
 from cleaner import clean
 import utils
 from cytolk.tolk import speak
-from data_manager import DataManager as dm
 import dialogs
 import pysubs2
 import reader
@@ -12,6 +11,7 @@ import wx
 import os
 import vlc
 
+
 class MediaPanel(wx.Panel):
     def __init__(self, frame):
         super().__init__(frame)
@@ -19,6 +19,7 @@ class MediaPanel(wx.Panel):
         self.state = utils.MediaState.neverPlayed
         self.instance = vlc.Instance("--no-video")
         self.player = self.instance.media_player_new()
+        self.media = None
         self.player.set_hwnd(self.GetHandle())
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onTimer, self.timer)
@@ -43,7 +44,7 @@ class MediaPanel(wx.Panel):
         if self.player.get_state() == vlc.State.Ended:
             self.onStop(None)
             return
-        if self.index >= len(self.subtitle_handler) -1:
+        if self.index >= len(self.subtitle_handler) - 1:
             return
         if (
             utils.get_subtitle_tuple(self.subtitle_handler[self.index])
@@ -157,7 +158,7 @@ class MediaPanel(wx.Panel):
             self.subtitle_handler = pysubs2.load(
                 os.path.join(dir, file), encoding="utf-8"
             )
-        except Exception as e:
+        except Exception:
             logging.error("Could not load subtitles", exc_info=True)
             wx.MessageBox(
                 "That file couldn't be loaded. Make sure it's a supported format and try again.",
@@ -166,8 +167,8 @@ class MediaPanel(wx.Panel):
             )
             return
         self.subtitles[file] = (0, os.path.join(dir, file))
-        self.timer.start()
-        self.queue_timer.Start()
+        self.timer.start(50)
+        self.queue_timer.Start(50)
 
     def doLoadFile(self, file, dir):
         self.onStop(None)
@@ -197,10 +198,9 @@ class MediaPanel(wx.Panel):
         if len(external_subs) > 0:
             self.subtitles.update(external_subs)
             self.subtitle = next(iter(external_subs.items()))[1][1]
-        # if os.path.isfile(self.subtitle):
         self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
-        self.timer.Start()
-        self.queue_timer.Start()
+        self.timer.Start(50)
+        self.queue_timer.Start(50)
 
     def onPlay(self, evt=None):
         if self.player.get_media():
@@ -216,8 +216,7 @@ class MediaPanel(wx.Panel):
 
     def onStop(self, evt):
         self.queue_reset()
-        if self.player.get_media():
-            self.player.stop()
+        self.player.stop()
 
     def seek(self, offset):
         self.player.Seek(offset)
