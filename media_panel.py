@@ -13,16 +13,17 @@ import vlc
 
 
 class MediaPanel(wx.Panel):
-    def __init__(self, frame):
-        super().__init__(frame)
+    def __init__(self, parent):
+        super().__init__(parent)
         self.SetLabel("Media controls")
         self.SetBackgroundColour(wx.BLACK)
-        self.frame = frame
+        self.frame = parent
         self.state = utils.MediaState.neverPlayed
         self.instance = vlc.Instance("--no-video")
-        self.player = self.instance.media_player_new()
+        self.player: vlc.MediaPlayer = self.instance.media_player_new()
         self.media = None
         self.player.set_hwnd(self.GetHandle())
+        self.manager: vlc.EventManager = self.player.event_manager()
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onTimer, self.timer)
         self.queue_timer = wx.Timer(self)
@@ -33,7 +34,8 @@ class MediaPanel(wx.Panel):
         self.queue = []
         self.queue_index = 0
         self.subtitle_handler = None
-        # The list of subtitles, A dictionary with keys of value string, For the name, And values for the value tuple (Default, subtitle_path)
+        # The list of subtitles, A dictionary with keys of value string, For the name, And values for the
+        # value tuple (Default, subtitle_path)
         self.subtitles = {}
         self.subtitle_text = ""
         # The current subtitle file selected.

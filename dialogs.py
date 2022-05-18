@@ -17,6 +17,7 @@ class SubtitleSelect(wx.Dialog):
         self.SetSizer(box)
         self.subtitle_select.SetFocus()
 
+
 class SubDelay(wx.Dialog):
     def __init__(self, frame, title, value):
         super().__init__(frame, title=title)

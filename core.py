@@ -69,15 +69,13 @@ class Main(wx.Frame):
         altDown = event.AltDown()
         shiftDown = event.ShiftDown()
         if keycode == wx.WXK_DOWN and self.mpanel.player.audio_get_volume() > 0:
-            self.mpanel.player.audio_set_volume(
-                self.mpanel.player.audio_get_volume() - 5
-            )
-            speak(f"{self.mpanel.player.audio_get_volume()}%")
+            vol = self.mpanel.player.audio_get_volume()
+            self.mpanel.player.audio_set_volume(vol - 5)
+            speak(f"{vol - 5}%")
         if keycode == wx.WXK_UP and self.mpanel.player.audio_get_volume() < 200:
-            self.mpanel.player.audio_set_volume(
-                self.mpanel.player.audio_get_volume() + 5
-            )
-            speak(f"{self.mpanel.player.audio_get_volume()}%")
+            vol = self.mpanel.player.audio_get_volume()
+            self.mpanel.player.audio_set_volume(vol + 5)
+            speak(f"{vol + 5}%")
 
         if keycode == wx.WXK_RIGHT:
             val = 5000
@@ -124,9 +122,10 @@ class Main(wx.Frame):
                 self.mpanel.doLoadFile(file, dir)
 
     def onLoadSubtitle(self, evt):
-        with wx.FileDialog(self, 
+        with wx.FileDialog(
+            self,
             wildcard="Subtitle files (*.srt;*.ass;*.ssa)|*.srt;*.ass;*.ssa",
-            message = "Select a subtitle file"
+            message="Select a subtitle file",
         ) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 dir = dlg.GetDirectory()
@@ -151,11 +150,11 @@ def main():
         filename="mediaslash.log",
         filemode="w",
         level=logging.DEBUG,
-        format="%(levelname)s: %(module)s: %(message)s: %(asctime)s",
+        format="%(levelname)s: %(module)s: %(funcName)s: %(asctime)s.\n%(message)s",
     )
 
     def exchandler(type, exc, tb):
-        logging.exception(
+        logging.error(
             "".join([str(i) for i in traceback.format_exception(type, exc, tb)])
         )
 
