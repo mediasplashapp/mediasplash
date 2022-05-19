@@ -1,6 +1,5 @@
 from datetime import timedelta
 import logging
-from cleaner import clean
 import utils
 from cytolk.tolk import speak
 import dialogs
@@ -64,7 +63,7 @@ class MediaPanel(wx.Panel):
         )
         current = timedelta(milliseconds=self.player.get_time())
         if current >= start and current <= end:
-            self.queue.append(self.subtitle_handler[self.index].text)
+            self.queue.append(self.subtitle_handler[self.index].plaintext)
             self.processed_events.append(
                 utils.get_subtitle_tuple(self.subtitle_handler[self.index])
             )
@@ -80,7 +79,7 @@ class MediaPanel(wx.Panel):
             end = timedelta(milliseconds=i.end + self.delay_by)
             current = timedelta(milliseconds=self.player.get_time())
             if current >= start and current <= end:
-                self.queue.append(i.text)
+                self.queue.append(i.plaintext)
                 self.processed_events.append(utils.get_subtitle_tuple(i))
                 self.index = val
                 break
@@ -152,12 +151,11 @@ class MediaPanel(wx.Panel):
             end = timedelta(milliseconds=i.end + self.delay_by)
             current = timedelta(milliseconds=self.player.get_time())
             if current >= start and current <= end:
-                self.queue.append(i.text)
+                self.queue.append(i.plaintext)
                 self.processed_events.append(utils.get_subtitle_tuple(i))
                 self.index = val
 
     def doLoadSubtitle(self, file, dir):
-        clean(os.path.join(dir, file))
         try:
             self.subtitle_handler = pysubs2.load(
                 os.path.join(dir, file), encoding="utf-8"
@@ -202,7 +200,8 @@ class MediaPanel(wx.Panel):
         if len(external_subs) > 0:
             self.subtitles.update(external_subs)
             self.subtitle = next(iter(external_subs.items()))[1][1]
-        self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
+        if self.subtitles:
+            self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
         self.timer.Start(50)
         self.queue_timer.Start(50)
 

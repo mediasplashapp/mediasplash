@@ -1,6 +1,5 @@
 import json
 import subprocess
-from cleaner import clean
 import os
 import uuid
 import logging
@@ -23,6 +22,5 @@ def generate_subtitles(filename, temp_dir):
             subtitle_file = f"{uuid.uuid4().hex}.ass"
             res = subprocess.getoutput(["ffmpeg", "-i", filename, "-map", f"0:{i['index']}", f"{os.path.join(temp_dir.name, subtitle_file)}"])
             logging.debug(res)
-            clean(os.path.join(temp_dir.name, subtitle_file))
             final[subtitle_name.replace(".ass", "")] = (i['disposition']['default'], f"{os.path.join(temp_dir.name, subtitle_file)}")
     return final
