@@ -155,6 +155,12 @@ class MediaPanel(wx.Panel):
                 self.processed_events.append(utils.get_subtitle_tuple(i))
                 self.index = val
 
+    def audio_tracks_set(self):
+        self.frame.audio_tracks_menu.Clear()
+        audio_tracks = self.player.audio_get_track_description()
+        for i in audio_tracks[1:]:
+            self.frame.audio_tracks_menu.Append(wx.ID_ANY, i[1].decode('utf-8'), kind = wx.ITEM_RADIO)
+
     def doLoadSubtitle(self, file, dir):
         try:
             self.subtitle_handler = pysubs2.load(
@@ -177,6 +183,7 @@ class MediaPanel(wx.Panel):
         self.timer.Stop()
         self.media = self.instance.media_new(os.path.join(dir, file))
         self.player.set_media(self.media)
+        self.frame.audio_tracks_menu.Clear()
         if self.temp_dir:
             self.temp_dir.cleanup()
             self.temp_dir = None
@@ -202,6 +209,7 @@ class MediaPanel(wx.Panel):
             self.subtitle = next(iter(external_subs.items()))[1][1]
         if self.subtitles:
             self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
+        self.audio_tracks_set()
         self.timer.Start(50)
         self.queue_timer.Start(50)
 

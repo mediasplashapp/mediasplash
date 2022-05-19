@@ -3,6 +3,8 @@ from data_manager import DataManager as dm
 from datetime import timedelta
 import logging
 import utils
+import custom_controls
+import pyperclip
 import platform
 import traceback
 import wx
@@ -30,24 +32,36 @@ class Main(wx.Frame):
         self.fileMenu = wx.Menu()
         self.Centre()
         self.fileOpen = self.fileMenu.Append(wx.ID_OPEN)
-        self.subtitleSelectMenu = self.fileMenu.Append(
-            wx.ID_ANY, "Change subtitle.\tAlt+C"
-        )
         self.subtitleOpen = self.fileMenu.Append(wx.ID_ANY, "Open subtitle...\tAlt+O")
-        self.subDelay = self.fileMenu.Append(
-            wx.ID_ANY, "Change subtitle delay...\tAlt+D"
-        )
         self.exit_item = self.fileMenu.Append(wx.ID_EXIT, "Quit\tCtrl+Q")
         self.menubar.Append(self.fileMenu, "&file")
+        self.mediaMenu = wx.Menu()
+        self.subtitleSelectMenu = self.mediaMenu.Append(
+            wx.ID_ANY, "Change subtitle.\tAlt+C"
+        )
+        self.subDelay = self.mediaMenu.Append(
+            wx.ID_ANY, "Change subtitle delay...\tAlt+D"
+        )
+        self.audio_tracks_menu = custom_controls.ClearableMenu()
+        self.mediaMenu.AppendSubMenu(self.audio_tracks_menu, "Audio tracks")
+        self.menubar.Append(self.mediaMenu, "&Media")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
         self.Bind(wx.EVT_MENU, self.mpanel.subtitle_select, self.subtitleSelectMenu)
         self.Bind(wx.EVT_MENU, self.onLoadSubtitle, self.subtitleOpen)
         self.Bind(wx.EVT_MENU, lambda event: self.mpanel.delay_set(), self.subDelay)
         self.Bind(wx.EVT_MENU, lambda event: self.Close(), self.exit_item)
+        self.audio_tracks_menu.Bind(wx.EVT_MENU, self.audio_track_set)
         self.Bind(wx.EVT_CLOSE, self.onClose)
         self.data = dm("config.json")
         self.load()
+
+    def audio_track_set(self, event):
+        result = self.audio_tracks_menu.GetChecked().GetItemLabelText()
+        tracks = self.mpanel.player.audio_get_track_description()
+        for i in tracks[1:]:
+            if i[1].decode('utf-8') == result:
+                self.mpanel.player.audio_set_track(i[0])
 
     def load(self):
         self.data.load()
