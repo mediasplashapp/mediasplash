@@ -1,3 +1,4 @@
+import vlc
 from datetime import timedelta
 import logging
 import utils
@@ -8,7 +9,6 @@ import reader
 import tempfile
 import wx
 import os
-import vlc
 
 
 class MediaPanel(wx.Panel):

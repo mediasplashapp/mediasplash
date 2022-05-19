@@ -1,17 +1,23 @@
-from datetime import timedelta
-from media_panel import MediaPanel
+import sys
 from data_manager import DataManager as dm
+from datetime import timedelta
 import logging
 import utils
 import platform
 import traceback
-import sys
 import wx
 from cytolk import tolk
 from cytolk.tolk import speak
-import os
 
-os.add_dll_directory(os.path.join(os.getenv("programfiles"), r"videolan\vlc"))
+try:
+    from media_panel import MediaPanel
+except FileNotFoundError:
+    import ctypes
+
+    ctypes.windll.user32.MessageBoxW(
+        None, "Vlc not found. Please install Vlc 64 bit 3.0 or later", "Error", 0x10
+    )
+    sys.exit()
 
 
 class Main(wx.Frame):
@@ -166,8 +172,8 @@ def main():
     logging.info(f"wx version: {wx.version()}")
     logging.info(f"machine name: {platform.machine()}")
 
-    compiled = getattr(locals(), "__compiled__", False)
-    with tolk.tolk(compiled):
+    compiled = "__compiled__" in locals()
+    with tolk.tolk(not compiled):
         app = wx.App()
         frame = Main(app)
         frame.Show()
