@@ -18,7 +18,13 @@ def generate_subtitles(filename, temp_dir):
         return final
     for i in data['streams']:
         if "codec_name" in i and "index" in i and i['codec_type'] == 'subtitle':
-            subtitle_name = f"{i['tags']['title']}.ass"
+
+
+            if "title" in i['tags']:
+                subtitle_name = f"{i['tags']['title']}.ass"
+            else:
+                subtitle_name = f"{i['tags']['language']}.ass"
+
             subtitle_file = f"{uuid.uuid4().hex}.ass"
             res = subprocess.getoutput(["ffmpeg", "-i", filename, "-map", f"0:{i['index']}", f"{os.path.join(temp_dir.name, subtitle_file)}"])
             logging.debug(res)
