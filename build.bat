@@ -1,1 +1,5 @@
-nuitka mediaslash.pyw --windows-disable-console --onefile --standalone --user-plugin=CytolkPlugin.py
+nuitka mediaslash.py \
+--windows-disable-console \
+--onefile \
+--standalone \
+--user-plugin=CytolkPlugin.py

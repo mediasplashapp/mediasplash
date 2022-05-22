@@ -88,6 +88,13 @@ class Main(wx.Frame):
         controlDown = event.CmdDown()
         altDown = event.AltDown()
         shiftDown = event.ShiftDown()
+        if keycode == ord("."):
+            self.mpanel.player.next_chapter()
+            self.mpanel.queue_reset()
+        if keycode == ord(","):
+            self.mpanel.player.previous_chapter()
+            self.mpanel.queue_reset()
+
         if keycode == wx.WXK_DOWN and self.mpanel.player.audio_get_volume() > 0:
             vol = self.mpanel.player.audio_get_volume()
             self.mpanel.player.audio_set_volume(vol - 5)
@@ -186,7 +193,7 @@ def main():
     logging.info(f"wx version: {wx.version()}")
     logging.info(f"machine name: {platform.machine()}")
 
-    compiled = "__compiled__" in locals()
+    compiled = "__compiled__" in globals()
     with tolk.tolk(not compiled):
         app = wx.App()
         frame = Main(app)
