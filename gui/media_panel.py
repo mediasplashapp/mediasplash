@@ -3,7 +3,7 @@ from datetime import timedelta
 import logging
 import utils
 from cytolk.tolk import speak
-import dialogs
+from . import dialogs
 import pysubs2
 import reader
 import tempfile
@@ -159,7 +159,9 @@ class MediaPanel(wx.Panel):
         self.frame.audio_tracks_menu.Clear()
         audio_tracks = self.player.audio_get_track_description()
         for i in audio_tracks[1:]:
-            self.frame.audio_tracks_menu.Append(wx.ID_ANY, i[1].decode('utf-8'), kind = wx.ITEM_RADIO)
+            self.frame.audio_tracks_menu.Append(
+                wx.ID_ANY, i[1].decode("utf-8"), kind=wx.ITEM_RADIO
+            )
 
     def doLoadSubtitle(self, file, dir):
         try:

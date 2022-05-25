@@ -1,5 +1,6 @@
 import wx
 
+
 class ClearableMenu(wx.Menu):
     def Clear(self):
         items = self.GetMenuItems()

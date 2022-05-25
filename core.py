@@ -1,10 +1,11 @@
 import sys
+import os
 from data_manager import DataManager as dm
+from globals import info
 from datetime import timedelta
 import logging
 import utils
-import custom_controls
-import pyperclip
+from gui import custom_controls
 import platform
 import traceback
 import wx
@@ -12,7 +13,7 @@ from cytolk import tolk
 from cytolk.tolk import speak
 
 try:
-    from media_panel import MediaPanel
+    from gui.media_panel import MediaPanel
 except FileNotFoundError:
     import ctypes
 
@@ -53,14 +54,14 @@ class Main(wx.Frame):
         self.Bind(wx.EVT_MENU, lambda event: self.Close(), self.exit_item)
         self.audio_tracks_menu.Bind(wx.EVT_MENU, self.audio_track_set)
         self.Bind(wx.EVT_CLOSE, self.onClose)
-        self.data = dm("config.json")
+        self.data = dm(os.path.join(info.data_path, "config.json"))
         self.load()
 
     def audio_track_set(self, event):
         result = self.audio_tracks_menu.GetChecked().GetItemLabelText()
         tracks = self.mpanel.player.audio_get_track_description()
         for i in tracks[1:]:
-            if i[1].decode('utf-8') == result:
+            if i[1].decode("utf-8") == result:
                 self.mpanel.player.audio_set_track(i[0])
 
     def load(self):
