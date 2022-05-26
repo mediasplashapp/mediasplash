@@ -47,7 +47,7 @@ class MediaPanel(wx.Panel):
         if self.player.get_state() == vlc.State.Ended:
             self.onStop(None)
             return
-        if self.index >= len(self.subtitle_handler) - 1:
+        if not self.subtitle_handler or self.index >= len(self.subtitle_handler) - 1:
             return
         if (
             utils.get_subtitle_tuple(self.subtitle_handler[self.index])
@@ -100,6 +100,12 @@ class MediaPanel(wx.Panel):
             final_list.append(i)
         return final_list
 
+    def subtitle_destroy(self):
+        self.subtitle_handler = None
+        self.subtitles.clear()
+        self.subtitle = ""
+        self.queue_reset()
+
     def delay_set(self):
         with dialogs.SubDelay(
             self, "Define subtitle delay(In milliseconds)", value=str(self.delay_by)
@@ -137,8 +143,8 @@ class MediaPanel(wx.Panel):
 
     def queue_reset(self):
         if (
-            len(self.subtitles) == 0
-            or not self.subtitle_handler
+            not self.subtitle_handler
+            or len(self.subtitles) == 0
             or len(self.subtitle_handler) == 0
         ):
             return
@@ -186,6 +192,7 @@ class MediaPanel(wx.Panel):
         self.media = self.instance.media_new(os.path.join(dir, file))
         self.player.set_media(self.media)
         self.frame.audio_tracks_menu.Clear()
+        self.subtitle_destroy()
         if self.temp_dir:
             self.temp_dir.cleanup()
             self.temp_dir = None
