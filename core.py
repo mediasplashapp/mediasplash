@@ -4,7 +4,7 @@ from data_manager import DataManager as dm
 from globals import info
 from datetime import timedelta
 import logging
-import utils
+from misc import utils
 from gui import custom_controls
 import platform
 import traceback
@@ -48,9 +48,9 @@ class Main(wx.Frame):
         self.menubar.Append(self.mediaMenu, "&Media")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
-        self.Bind(wx.EVT_MENU, self.mpanel.subtitle_select, self.subtitleSelectMenu)
+        self.Bind(wx.EVT_MENU, self.mpanel.subtitles.subtitle_select, self.subtitleSelectMenu)
         self.Bind(wx.EVT_MENU, self.onLoadSubtitle, self.subtitleOpen)
-        self.Bind(wx.EVT_MENU, lambda event: self.mpanel.delay_set(), self.subDelay)
+        self.Bind(wx.EVT_MENU, lambda event: self.mpanel.subtitles.delay_set(), self.subDelay)
         self.Bind(wx.EVT_MENU, lambda event: self.Close(), self.exit_item)
         self.audio_tracks_menu.Bind(wx.EVT_MENU, self.audio_track_set)
         self.Bind(wx.EVT_CLOSE, self.onClose)
@@ -59,29 +59,28 @@ class Main(wx.Frame):
 
     def audio_track_set(self, event):
         result = self.audio_tracks_menu.GetChecked().GetItemLabelText()
-        tracks = self.mpanel.player.audio_get_track_description()
+        tracks = self.mpanel.media.player.audio_get_track_description()
         for i in tracks[1:]:
             if i[1].decode("utf-8") == result:
-                self.mpanel.player.audio_set_track(i[0])
+                self.mpanel.media.player.audio_set_track(i[0])
 
     def load(self):
         self.data.load()
         if self.data.exists("subtitle_delay"):
-            self.mpanel.delay_by = int(self.data.get("subtitle_delay"))
+            self.mpanel.subtitles.delay_by = int(self.data.get("subtitle_delay"))
 
     def save(self):
-        self.data.add("subtitle_delay", self.mpanel.delay_by)
+        self.data.add("subtitle_delay", self.mpanel.subtitles.delay_by)
         self.data.save()
 
     def onClose(self, event):
         self.save()
-        if self.mpanel.temp_dir:  # Make sure to clean up the directory before closing.
-            self.mpanel.temp_dir.cleanup()
-        self.mpanel.onStop(None)
-        if self.mpanel.media:
-            self.mpanel.media.release()
-        self.mpanel.player.release()
-        self.mpanel.instance.release()
+        self.mpanel.subtitles.destroy()
+        self.mpanel.media.onStop()
+        if self.mpanel.media.media:
+            self.mpanel.media.media.release()
+        self.mpanel.media.player.release()
+        self.mpanel.media.instance.release()
         wx.CallAfter(self.Destroy)
 
     def onKeyHook(self, event):
@@ -90,19 +89,19 @@ class Main(wx.Frame):
         altDown = event.AltDown()
         shiftDown = event.ShiftDown()
         if keycode == ord("."):
-            self.mpanel.player.next_chapter()
-            self.mpanel.queue_reset()
+            self.mpanel.media.player.next_chapter()
+            self.mpanel.subtitles.queue_reset()
         if keycode == ord(","):
-            self.mpanel.player.previous_chapter()
-            self.mpanel.queue_reset()
+            self.mpanel.media.player.previous_chapter()
+            self.mpanel.subtitles.queue_reset()
 
-        if keycode == wx.WXK_DOWN and self.mpanel.player.audio_get_volume() > 0:
-            vol = self.mpanel.player.audio_get_volume()
-            self.mpanel.player.audio_set_volume(vol - 5)
+        if keycode == wx.WXK_DOWN and self.mpanel.media.player.audio_get_volume() > 0:
+            vol = self.mpanel.media.player.audio_get_volume()
+            self.mpanel.media.player.audio_set_volume(vol - 5)
             speak(f"{vol - 5}%")
-        if keycode == wx.WXK_UP and self.mpanel.player.audio_get_volume() < 200:
-            vol = self.mpanel.player.audio_get_volume()
-            self.mpanel.player.audio_set_volume(vol + 5)
+        if keycode == wx.WXK_UP and self.mpanel.media.player.audio_get_volume() < 200:
+            vol = self.mpanel.media.player.audio_get_volume()
+            self.mpanel.media.player.audio_set_volume(vol + 5)
             speak(f"{vol + 5}%")
 
         if keycode == wx.WXK_RIGHT:
@@ -111,10 +110,10 @@ class Main(wx.Frame):
                 val = 60000
             if controlDown:
                 val = 30000
-            self.mpanel.player.set_position(
-                (self.mpanel.player.get_time() + val) / self.mpanel.player.get_length()
+            self.mpanel.media.player.set_position(
+                (self.mpanel.media.player.get_time() + val) / self.mpanel.media.player.get_length()
             )
-            self.mpanel.queue_reset()
+            self.mpanel.subtitles.queue_reset()
 
         if keycode == wx.WXK_LEFT:
             val = 5000
@@ -122,23 +121,23 @@ class Main(wx.Frame):
                 val = 60000
             if controlDown:
                 val = 30000
-            self.mpanel.player.set_position(
-                (self.mpanel.player.get_time() - val) / self.mpanel.player.get_length()
+            self.mpanel.media.player.set_position(
+                (self.mpanel.media.player.get_time() - val) / self.mpanel.media.player.get_length()
             )
-            self.mpanel.queue_reset()
+            self.mpanel.subtitles.queue_reset()
         if keycode == wx.WXK_HOME:
-            self.mpanel.player.set_position(0)
-            self.mpanel.queue_reset()
+            self.mpanel.media.player.set_position(0)
+            self.mpanel.subtitles.queue_reset()
 
         if keycode == ord("P"):
             speak(
-                f"Current position, {str(timedelta(seconds = round((self.mpanel.player.get_time() / 1000))))} elapsed of {str(timedelta(seconds = round((self.mpanel.player.get_length() / 1000))))}"
+                f"Current position, {str(timedelta(seconds = round((self.mpanel.media.player.get_time() / 1000))))} elapsed of {str(timedelta(seconds = round((self.mpanel.media.player.get_length() / 1000))))}"
             )
         if keycode == wx.WXK_SPACE:
-            if self.mpanel.state == utils.MediaState.paused:
-                self.mpanel.onPlay()
+            if self.mpanel.media.state == utils.MediaState.paused:
+                self.mpanel.media.onPlay()
             else:
-                self.mpanel.onPause()
+                self.mpanel.media.onPause()
         else:
             event.Skip()
 
@@ -158,7 +157,7 @@ class Main(wx.Frame):
             if dlg.ShowModal() == wx.ID_OK:
                 dir = dlg.GetDirectory()
                 file = dlg.GetFilename()
-                self.mpanel.doLoadSubtitle(file, dir)
+                self.mpanel.subtitles.doLoadSubtitle(file, dir)
 
 
 class LogRedirector:
