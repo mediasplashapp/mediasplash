@@ -2,5 +2,4 @@ wxpython
 cytolk
 pysubs2
 python-vlc
-pyperclip
 nuitka

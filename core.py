@@ -1,6 +1,25 @@
+"""
+    Mediaslash, A simple media player with screen reader subtitle support.
+    Copyright (C) 2022 mohamedSulaimanAlmarzooqi, Mazen428 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+
 import sys
 import os
 from data_manager import DataManager as dm
+from gui import dialogs
 from globals import info
 from datetime import timedelta
 import logging
@@ -34,6 +53,7 @@ class Main(wx.Frame):
         self.Centre()
         self.fileOpen = self.fileMenu.Append(wx.ID_OPEN)
         self.subtitleOpen = self.fileMenu.Append(wx.ID_ANY, "Open subtitle...\tAlt+O")
+        self.fileAbout = self.fileMenu.Append(wx.ID_ABOUT)
         self.exit_item = self.fileMenu.Append(wx.ID_EXIT, "Quit\tCtrl+Q")
         self.menubar.Append(self.fileMenu, "&file")
         self.mediaMenu = wx.Menu()
@@ -48,6 +68,8 @@ class Main(wx.Frame):
         self.menubar.Append(self.mediaMenu, "&Media")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
+        self.Bind(wx.EVT_MENU, self.about, self.fileAbout)
+
         self.Bind(wx.EVT_MENU, self.mpanel.subtitles.subtitle_select, self.subtitleSelectMenu)
         self.Bind(wx.EVT_MENU, self.onLoadSubtitle, self.subtitleOpen)
         self.Bind(wx.EVT_MENU, lambda event: self.mpanel.subtitles.delay_set(), self.subDelay)
@@ -56,6 +78,10 @@ class Main(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.onClose)
         self.data = dm(os.path.join(info.data_path, "config.json"))
         self.load()
+
+    def about(self, event):
+        with dialogs.AboutDialog(self) as dlg:
+            dlg.ShowModal()
 
     def audio_track_set(self, event):
         result = self.audio_tracks_menu.GetChecked().GetItemLabelText()
