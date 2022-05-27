@@ -88,6 +88,11 @@ class Main(wx.Frame):
         controlDown = event.CmdDown()
         altDown = event.AltDown()
         shiftDown = event.ShiftDown()
+        if keycode == wx.WXK_PAGEUP:
+            self.mpanel.media.previous_file()
+        if keycode == wx.WXK_PAGEDOWN:
+            self.mpanel.media.next_file()
+
         if keycode == ord("."):
             self.mpanel.media.player.next_chapter()
             self.mpanel.subtitles.queue_reset()

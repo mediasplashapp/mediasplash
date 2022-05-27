@@ -46,10 +46,7 @@ class MediaPanel(wx.Panel):
         self.timer.Stop()
         self.frame.audio_tracks_menu.Clear()
         self.subtitles.destroy()
-        title = self.media.player.get_title()
-        if title == -1:
-            title = file
-        self.frame.SetTitle(f"{title} mediaslash")
+        self.frame.SetTitle(f"{file} mediaslash")
         self.media.load(dir, file)
         self.subtitles.load(dir, file)
         self.audio_tracks_set()
