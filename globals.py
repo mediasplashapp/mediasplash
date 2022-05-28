@@ -24,7 +24,7 @@ import os
 class AppInfo:
     name: str = "MediaSplash"
     version: float = 1.0
-    data_path: str = os.path.join(os.path.expandvars("%appdata%"), "mediaslash")
+    data_path: str = os.path.join(os.path.expandvars("%appdata%"), "mediasplash")
 
 
 info = AppInfo()
