@@ -1,6 +1,6 @@
 """
     mediasplash, A simple media player with screen reader subtitle support.
-    Copyright (C) 2022 mohamedSulaimanAlmarzooqi, Mazen428 
+    Copyright (C) 2022 mohamedSulaimanAlmarzooqi, Mazen428
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ class Main(wx.Frame):
         super().__init__(None, title="mediasplash")
         self.mpanel = MediaPanel(self)
         self.app = app
-        self.mpanel.Bind(wx.EVT_CHAR_HOOK, self.onKeyHook)
+        self.mpanel.Bind(wx.EVT_KEY_DOWN, self.onKeyPress)
         self.menubar = wx.MenuBar()
         self.fileMenu = wx.Menu()
         self.Centre()
@@ -109,7 +109,7 @@ class Main(wx.Frame):
         self.mpanel.media.instance.release()
         wx.CallAfter(self.Destroy)
 
-    def onKeyHook(self, event):
+    def onKeyPress(self, event):
         keycode = event.GetKeyCode()
         controlDown = event.CmdDown()
         altDown = event.AltDown()
@@ -224,8 +224,11 @@ def main():
     logging.info(f"wx version: {wx.version()}")
     logging.info(f"machine name: {platform.machine()}")
 
-    compiled = "__compiled__" in globals()
-    with tolk.tolk(False):
+    compiled = hasattr("__compiled__", "sys")
+    logging.info(compiled)
+    logging.info(locals())
+    logging.info(globals())
+    with tolk.tolk(not compiled):
         app = wx.App()
         frame = Main(app)
         frame.Show()

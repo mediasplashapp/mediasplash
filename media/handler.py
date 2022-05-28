@@ -30,7 +30,7 @@ class Media:
         self.dir = ""
         self.file = ""
         self.state = utils.MediaState.neverPlayed
-        self.instance = vlc.Instance("--no-video")
+        self.instance = vlc.Instance()
         self.player: vlc.MediaPlayer = self.instance.media_player_new()
         self.media = None
         self.player.set_hwnd(self.panel.GetHandle())

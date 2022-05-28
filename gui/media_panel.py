@@ -1,6 +1,6 @@
 """
     mediasplash, A simple media player with screen reader subtitle support.
-    Copyright (C) 2022 mohamedSulaimanAlmarzooqi, Mazen428 
+    Copyright (C) 2022 mohamedSulaimanAlmarzooqi, Mazen428
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ from media.handler import Media
 
 class MediaPanel(wx.Panel):
     def __init__(self, parent):
-        super().__init__(parent)
+        super().__init__(parent, style = wx.WANTS_CHARS)
         self.SetLabel("Media controls")
         self.SetBackgroundColour(wx.BLACK)
         self.frame = parent
@@ -69,4 +69,3 @@ class MediaPanel(wx.Panel):
         self.audio_tracks_set()
         self.timer.Start(50)
         self.queue_timer.Start(50)
-
