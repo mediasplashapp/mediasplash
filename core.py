@@ -225,7 +225,7 @@ def main():
     logging.info(f"machine name: {platform.machine()}")
 
     compiled = "__compiled__" in globals()
-    with tolk.tolk(not compiled):
+    with tolk.tolk(False):
         app = wx.App()
         frame = Main(app)
         frame.Show()
