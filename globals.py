@@ -22,7 +22,7 @@ import os
 
 @dataclass(frozen=True)
 class AppInfo:
-    name: str = "MediaSlash"
+    name: str = "MediaSplash"
     version: float = 1.0
     data_path: str = os.path.join(os.path.expandvars("%appdata%"), "mediaslash")
 
