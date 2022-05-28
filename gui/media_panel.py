@@ -1,5 +1,5 @@
 """
-    Mediaslash, A simple media player with screen reader subtitle support.
+    mediasplash, A simple media player with screen reader subtitle support.
     Copyright (C) 2022 mohamedSulaimanAlmarzooqi, Mazen428 
 
     This program is free software: you can redistribute it and/or modify
@@ -63,7 +63,7 @@ class MediaPanel(wx.Panel):
         self.timer.Stop()
         self.frame.audio_tracks_menu.Clear()
         self.subtitles.destroy()
-        self.frame.SetTitle(f"{file} mediaslash")
+        self.frame.SetTitle(f"{file} mediasplash")
         self.media.load(dir, file)
         self.subtitles.load(dir, file)
         self.audio_tracks_set()

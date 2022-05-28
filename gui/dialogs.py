@@ -1,5 +1,5 @@
 """
-    Mediaslash, A simple media player with screen reader subtitle support.
+    mediasplash, A simple media player with screen reader subtitle support.
     Copyright (C) 2022 mohamedSulaimanAlmarzooqi, Mazen428 
 
     This program is free software: you can redistribute it and/or modify
@@ -48,10 +48,10 @@ class SubDelay(wx.Dialog):
 
 class AboutDialog(wx.Dialog):
     def __init__(self, frame):
-        super().__init__(frame, title = "About mediaslash")
+        super().__init__(frame, title = "About mediasplash")
         box = wx.BoxSizer()
         self.ctrl = wx.TextCtrl(self, value = """
-    Mediaslash, A simple media player with screen reader subtitle support.
+    mediasplash, A simple media player with screen reader subtitle support.
     Copyright (C) 2022 mohamedSulaimanAlmarzooqi, Mazen428 
 
     This program is free software: you can redistribute it and/or modify

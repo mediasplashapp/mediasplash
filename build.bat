@@ -1,4 +1,4 @@
-nuitka mediaslash.py \
+nuitka mediasplash.py \
 --windows-disable-console \
 --onefile \
 --standalone \

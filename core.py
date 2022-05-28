@@ -1,5 +1,5 @@
 """
-    Mediaslash, A simple media player with screen reader subtitle support.
+    mediasplash, A simple media player with screen reader subtitle support.
     Copyright (C) 2022 mohamedSulaimanAlmarzooqi, Mazen428 
 
     This program is free software: you can redistribute it and/or modify
@@ -44,7 +44,7 @@ except FileNotFoundError:
 
 class Main(wx.Frame):
     def __init__(self, app):
-        super().__init__(None, title="mediaslash")
+        super().__init__(None, title="mediasplash")
         self.mpanel = MediaPanel(self)
         self.app = app
         self.mpanel.Bind(wx.EVT_CHAR_HOOK, self.onKeyHook)
@@ -205,7 +205,7 @@ class LogRedirector:
 
 def main():
     logging.basicConfig(
-        filename="mediaslash.log",
+        filename="mediasplash.log",
         filemode="w",
         level=logging.DEBUG,
         format="%(levelname)s: %(module)s: %(funcName)s: %(asctime)s.\n%(message)s",
