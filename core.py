@@ -224,11 +224,7 @@ def main():
     logging.info(f"wx version: {wx.version()}")
     logging.info(f"machine name: {platform.machine()}")
 
-    compiled = hasattr("__compiled__", "sys")
-    logging.info(compiled)
-    logging.info(locals())
-    logging.info(globals())
-    with tolk.tolk(not compiled):
+    with tolk.tolk(False):
         app = wx.App()
         frame = Main(app)
         frame.Show()
