@@ -20,6 +20,9 @@ import vlc
 import os
 import wx
 from misc import utils
+import os
+
+os.add_dll_directory(os.path.join(os.getcwd(), 'libs'))
 
 supported_media = (".mp3", ".mp4", ".mkv", ".ogg", ".opus", ".wav", ".aac", ".m4a", ".flac")
 
