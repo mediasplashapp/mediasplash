@@ -35,6 +35,7 @@ class Media:
         self.media = None
         self.player.set_hwnd(self.panel.GetHandle())
         self.manager: vlc.EventManager = self.player.event_manager()
+        self.player.set_fullscreen(True)
 
     def update(self):
         if self.player.get_state() == vlc.State.Ended:
@@ -46,6 +47,7 @@ class Media:
         self.file = file
         self.media = self.instance.media_new(os.path.join(dir, file))
         self.player.set_media(self.media)
+        self.player.video_set_spu_delay(self.panel.subtitles.delay_by)
         self.onPlay()
 
     def next_file(self):

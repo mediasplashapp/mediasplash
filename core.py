@@ -94,6 +94,8 @@ class Main(wx.Frame):
         self.data.load()
         if self.data.exists("subtitle_delay"):
             self.mpanel.subtitles.delay_by = int(self.data.get("subtitle_delay"))
+            self.mpanel.media.player.video_set_spu_delay(int(self.data.get("subtitle_delay")))
+
 
     def save(self):
         self.data.add("subtitle_delay", self.mpanel.subtitles.delay_by)
@@ -224,7 +226,7 @@ def main():
     logging.info(f"wx version: {wx.version()}")
     logging.info(f"machine name: {platform.machine()}")
 
-    with tolk.tolk(False):
+    with tolk.tolk():
         app = wx.App()
         frame = Main(app)
         frame.Show()
