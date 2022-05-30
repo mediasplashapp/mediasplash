@@ -17,20 +17,13 @@
 """
 
 import subtitles.handler
-import logging
-from misc import utils
-from cytolk.tolk import speak
-from . import dialogs
-import pysubs2
-import tempfile
 import wx
-import os
 from media.handler import Media
 
 
 class MediaPanel(wx.Panel):
     def __init__(self, parent):
-        super().__init__(parent, style = wx.WANTS_CHARS)
+        super().__init__(parent, style=wx.WANTS_CHARS)
         self.SetLabel("Media controls")
         self.SetBackgroundColour(wx.BLACK)
         self.frame = parent
@@ -48,7 +41,6 @@ class MediaPanel(wx.Panel):
     def onQueueTimer(self, event):
         self.subtitles.on_queue()
 
-
     def audio_tracks_set(self):
         self.frame.audio_tracks_menu.Clear()
         audio_tracks = self.media.player.audio_get_track_description()
@@ -56,7 +48,6 @@ class MediaPanel(wx.Panel):
             self.frame.audio_tracks_menu.Append(
                 wx.ID_ANY, i[1].decode("utf-8"), kind=wx.ITEM_RADIO
             )
-
 
     def doLoadFile(self, file, dir):
         self.media.onStop()

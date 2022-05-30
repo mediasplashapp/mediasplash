@@ -63,6 +63,7 @@ class Main(wx.Frame):
         self.subDelay = self.mediaMenu.Append(
             wx.ID_ANY, "Change subtitle delay...\tAlt+D"
         )
+        self.jumpItem = self.mediaMenu.Append(wx.ID_ANY, "Jump to...\tctrl+J")
         self.audio_tracks_menu = custom_controls.ClearableMenu()
         self.mediaMenu.AppendSubMenu(self.audio_tracks_menu, "Audio tracks")
         self.menubar.Append(self.mediaMenu, "&Media")
@@ -70,10 +71,15 @@ class Main(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
         self.Bind(wx.EVT_MENU, self.about, self.fileAbout)
 
-        self.Bind(wx.EVT_MENU, self.mpanel.subtitles.subtitle_select, self.subtitleSelectMenu)
+        self.Bind(
+            wx.EVT_MENU, self.mpanel.subtitles.subtitle_select, self.subtitleSelectMenu
+        )
         self.Bind(wx.EVT_MENU, self.onLoadSubtitle, self.subtitleOpen)
-        self.Bind(wx.EVT_MENU, lambda event: self.mpanel.subtitles.delay_set(), self.subDelay)
+        self.Bind(
+            wx.EVT_MENU, lambda event: self.mpanel.subtitles.delay_set(), self.subDelay
+        )
         self.Bind(wx.EVT_MENU, lambda event: self.Close(), self.exit_item)
+        self.Bind(wx.EVT_MENU, self.on_jump, self.jumpItem)
         self.audio_tracks_menu.Bind(wx.EVT_MENU, self.audio_track_set)
         self.Bind(wx.EVT_CLOSE, self.onClose)
         self.data = dm(os.path.join(info.data_path, "config.json"))
@@ -82,6 +88,18 @@ class Main(wx.Frame):
     def about(self, event):
         with dialogs.AboutDialog(self) as dlg:
             dlg.ShowModal()
+
+    def on_jump(self, event):
+        with wx.TextEntryDialog(
+            self, "Type a position to quickly jump too, example, 5.30", "Go to"
+        ) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                value = dlg.GetValue().split(".")
+                delta = timedelta(minutes=int(value[0]), seconds=int(value[1]))
+                self.mpanel.media.player.set_position(
+                    round(delta.total_seconds() * 1000) / self.mpanel.media.length
+                )
+                self.mpanel.subtitles.queue_reset()
 
     def audio_track_set(self, event):
         result = self.audio_tracks_menu.GetChecked().GetItemLabelText()
@@ -94,8 +112,9 @@ class Main(wx.Frame):
         self.data.load()
         if self.data.exists("subtitle_delay"):
             self.mpanel.subtitles.delay_by = int(self.data.get("subtitle_delay"))
-            self.mpanel.media.player.video_set_spu_delay(int(self.data.get("subtitle_delay")))
-
+            self.mpanel.media.player.video_set_spu_delay(
+                int(self.data.get("subtitle_delay"))
+            )
 
     def save(self):
         self.data.add("subtitle_delay", self.mpanel.subtitles.delay_by)
@@ -144,7 +163,7 @@ class Main(wx.Frame):
             if controlDown:
                 val = 30000
             self.mpanel.media.player.set_position(
-                (self.mpanel.media.player.get_time() + val) / self.mpanel.media.player.get_length()
+                (self.mpanel.media.player.get_time() + val) / self.mpanel.media.length
             )
             self.mpanel.subtitles.queue_reset()
 
@@ -155,7 +174,7 @@ class Main(wx.Frame):
             if controlDown:
                 val = 30000
             self.mpanel.media.player.set_position(
-                (self.mpanel.media.player.get_time() - val) / self.mpanel.media.player.get_length()
+                (self.mpanel.media.player.get_time() - val) / self.mpanel.media.length
             )
             self.mpanel.subtitles.queue_reset()
         if keycode == wx.WXK_HOME:
@@ -164,7 +183,7 @@ class Main(wx.Frame):
 
         if keycode == ord("P"):
             speak(
-                f"Current position, {str(timedelta(seconds = round((self.mpanel.media.player.get_time() / 1000))))} elapsed of {str(timedelta(seconds = round((self.mpanel.media.player.get_length() / 1000))))}"
+                f"Current position, {str(timedelta(seconds = round((self.mpanel.media.player.get_time() / 1000))))} elapsed of {str(timedelta(seconds = round((self.mpanel.media.length / 1000))))}"
             )
         if keycode == wx.WXK_SPACE:
             if self.mpanel.media.state == utils.MediaState.paused:

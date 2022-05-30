@@ -1,6 +1,6 @@
 """
     mediasplash, A simple media player with screen reader subtitle support.
-    Copyright (C) 2022 mohamedSulaimanAlmarzooqi, Mazen428 
+    Copyright (C) 2022 mohamedSulaimanAlmarzooqi, Mazen428
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,11 +18,21 @@
 
 import vlc
 import os
-import wx
 from misc import utils
-import os
+from functools import cached_property
 
-supported_media = (".mp3", ".mp4", ".mkv", ".ogg", ".opus", ".wav", ".aac", ".m4a", ".flac")
+supported_media = (
+    ".mp3",
+    ".mp4",
+    ".mkv",
+    ".ogg",
+    ".opus",
+    ".wav",
+    ".aac",
+    ".m4a",
+    ".flac",
+)
+
 
 class Media:
     def __init__(self, parent):
@@ -41,20 +51,25 @@ class Media:
         if self.player.get_state() == vlc.State.Ended:
             self.onStop()
 
-
     def load(self, dir, file):
         self.dir = dir
         self.file = file
         self.media = self.instance.media_new(os.path.join(dir, file))
         self.player.set_media(self.media)
         self.player.video_set_spu_delay(self.panel.subtitles.delay_by)
+        if hasattr(self.__dict__, "length"):
+            del self.__dict__["length"]
         self.onPlay()
+
+    @cached_property
+    def length(self):
+        return self.player.get_length()
 
     def next_file(self):
         if not self.dir or not self.file:
             return
         files = os.listdir(self.dir)
-        if not self.file in files:
+        if self.file not in files:
             return
         file_index = files.index(self.file)
         for i in files[file_index:]:
@@ -66,7 +81,7 @@ class Media:
         if not self.dir or not self.file:
             return
         files = os.listdir(self.dir)
-        if not self.file in files:
+        if self.file not in files:
             return
         file_index = files.index(self.file)
         for i in reversed(files[:file_index]):
@@ -89,4 +104,3 @@ class Media:
     def onStop(self):
         self.panel.subtitles.queue_reset()
         self.player.stop()
-
