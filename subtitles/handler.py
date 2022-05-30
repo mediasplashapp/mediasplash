@@ -122,7 +122,9 @@ class SubHandler:
                 self.subtitle = j
                 break
         if len(self.subtitles) > 0 and self.subtitle == "":
-            self.subtitle = list(self.subtitles)[0][1]
+            for (i, val) in self.subtitles.values():
+                self.subtitle = val
+                break
         external_subs = utils.check_for_similar_subtitles(dir, file)
         if len(external_subs) > 0:
             self.subtitles.update(external_subs)
