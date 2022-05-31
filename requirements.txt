@@ -3,3 +3,4 @@ cytolk
 pysubs2
 python-vlc
 nuitka
+requests

@@ -1,6 +1,6 @@
 """
     mediasplash, A simple media player with screen reader subtitle support.
-    Copyright (C) 2022 mohamedSulaimanAlmarzooqi, Mazen428 
+    Copyright (C) 2022 mohamedSulaimanAlmarzooqi, Mazen428
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import os
 @dataclass(frozen=True)
 class AppInfo:
     name: str = "MediaSplash"
-    version: float = 1.0
+    version: tuple = (1, 1, 0)
     data_path: str = os.path.join(os.path.expandvars("%appdata%"), "mediasplash")
 
 

@@ -19,11 +19,12 @@
 import sys
 import os
 from data_manager import DataManager as dm
-from gui import dialogs
+from gui import dialogs, messageBox
 from globals import info
 from datetime import timedelta
+import webbrowser
 import logging
-from misc import utils
+from misc import utils, update_check
 from gui import custom_controls
 import platform
 import traceback
@@ -53,7 +54,6 @@ class Main(wx.Frame):
         self.Centre()
         self.fileOpen = self.fileMenu.Append(wx.ID_OPEN)
         self.subtitleOpen = self.fileMenu.Append(wx.ID_ANY, "Open subtitle...\tAlt+O")
-        self.fileAbout = self.fileMenu.Append(wx.ID_ABOUT)
         self.exit_item = self.fileMenu.Append(wx.ID_EXIT, "Quit\tCtrl+Q")
         self.menubar.Append(self.fileMenu, "&file")
         self.mediaMenu = wx.Menu()
@@ -67,9 +67,14 @@ class Main(wx.Frame):
         self.audio_tracks_menu = custom_controls.ClearableMenu()
         self.mediaMenu.AppendSubMenu(self.audio_tracks_menu, "Audio tracks")
         self.menubar.Append(self.mediaMenu, "&Media")
+        self.helpMenu = wx.Menu()
+        self.updateCheck = self.helpMenu.Append(wx.ID_ANY, "Check for updates...")
+        self.fileAbout = self.helpMenu.Append(wx.ID_ABOUT)
+        self.menubar.Append(self.helpMenu, "&Help")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
         self.Bind(wx.EVT_MENU, self.about, self.fileAbout)
+        self.Bind(wx.EVT_MENU, self.onUpdateCheck, self.updateCheck)
 
         self.Bind(
             wx.EVT_MENU, self.mpanel.subtitles.subtitle_select, self.subtitleSelectMenu
@@ -89,13 +94,32 @@ class Main(wx.Frame):
         with dialogs.AboutDialog(self) as dlg:
             dlg.ShowModal()
 
+    def onUpdateCheck(self, event):
+        updateData = update_check.check()
+        if updateData:
+            if messageBox(self, f"A new update of {info.name} is available. New version: {'.'.join(updateData)}. Download the update now?", "Update available", wx.YES_NO | wx.YES_DEFAULT) == wx.ID_YES:
+                webbrowser.open_new("https://github.com/mohamedSulaimanAlmarzooqi/mediasplash/releases/latest/download/mediasplash.zip")
+            return
+        messageBox(self, "No update found", "No updates", wx.ICON_WARNING)
+
     def on_jump(self, event):
         with wx.TextEntryDialog(
             self, "Type a position to quickly jump too, example, 5.30", "Go to"
         ) as dlg:
-            if dlg.ShowModal() == wx.ID_OK:
+            if dlg.ShowModal() == wx.ID_OK and dlg.GetValue().strip():
+                delta = None
                 value = dlg.GetValue().split(".")
-                delta = timedelta(minutes=int(value[0]), seconds=int(value[1]))
+                value = [int(v) for v in value if v.isdigit()]
+                if not value:
+                    return
+                if len(value) == 2:
+                    delta = timedelta(minutes=value[0], seconds=value[1])
+                elif len(value) == 1:
+                    delta = timedelta(minutes = value[0])
+                elif len(value) == 3:
+                    delta = timedelta(hours = value[0], minutes = value[1], seconds = value[2])
+                if not delta or delta.total_seconds() * 1000 > self.mpanel.media.length:
+                    messageBox(self, "input is not valid", "Error", wx.ICON_ERROR)
                 self.mpanel.media.player.set_position(
                     round(delta.total_seconds() * 1000) / self.mpanel.media.length
                 )
