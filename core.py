@@ -268,8 +268,8 @@ def main():
     logging.info(f"python version: {sys.version}")
     logging.info(f"wx version: {wx.version()}")
     logging.info(f"machine name: {platform.machine()}")
-
-    with tolk.tolk():
+    compiled = sys.argv[0].endswith(".exe")
+    with tolk.tolk(not compiled):
         app = wx.App()
         frame = Main(app)
         frame.Show()
