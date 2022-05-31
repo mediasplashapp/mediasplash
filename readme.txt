@@ -3,7 +3,7 @@ alt+C: Select a subtitle from the currently already loaded subtitles.
 ALT+D: Set subtitle delay.
 CTRL+O, Open a media file to load and play.
 ALT+O, Load an external subtitle.
-CTRL+A, Show the about dialog.
+Ctrl+J, Goto position dialog.
 P, Check current position
 Left/right arrow, Seek backward/forward for 5 seconds.
 Alt+left/right arrow: Seek backward/forward for 1 minute.

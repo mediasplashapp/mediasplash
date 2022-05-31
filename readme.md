@@ -7,4 +7,4 @@ Installing this requires you have vlc media player 64bit version 3.0 or later, T
 
 ## Donations.
 This is a fully free program, IF you would like to support it's development, Please consider sending a small donation, Any dolar helps.
-[Donate with paypal](https://www.paypal.com/donate/?hosted_button_id=4M3SJPRA8AQUW])
+[Donate with paypal](https://www.paypal.com/donate/?hosted_button_id=4M3SJPRA8AQUW)

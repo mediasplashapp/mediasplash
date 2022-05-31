@@ -81,6 +81,11 @@ class AboutDialog(wx.Dialog):
                 self, label="License", url="https://www.gnu.org/licenses/gpl-3.0.txt"
             )
         )
+        link_sizer.Add(
+            wx.adv.HyperlinkCtrl(
+                self, label = "Donate", url = "https://www.paypal.com/donate/?hosted_button_id=4M3SJPRA8AQUW"
+            )
+        )
         sizer.Add(link_sizer, 0, wx.ALL, 5)
         sizer.Add(wx.Button(self, wx.ID_CLOSE))
         self.Bind(
