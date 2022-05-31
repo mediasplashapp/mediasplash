@@ -98,7 +98,7 @@ class Main(wx.Frame):
         updateData = update_check.check()
         if updateData:
             if messageBox(self, f"A new update of {info.name} is available. New version: {'.'.join(updateData)}. Download the update now?", "Update available", wx.YES_NO | wx.YES_DEFAULT) == wx.ID_YES:
-                webbrowser.open_new("https://github.com/mohamedSulaimanAlmarzooqi/mediasplash/releases/latest/download/mediasplash_setup.exe")
+                webbrowser.open_new("https://github.com/mohamedSulaimanAlmarzooqi/mediasplash/releases/latest/download/mediasplash_setup.zip")
             return
         messageBox(self, "No update found", "No updates", wx.ICON_WARNING)
 
