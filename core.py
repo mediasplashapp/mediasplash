@@ -205,7 +205,7 @@ class Main(wx.Frame):
 
         if keycode == ord("P"):
             speak(
-                f"Current position, {str(timedelta(seconds = round((self.mpanel.media.player.get_time() / 1000))))} elapsed of {str(timedelta(seconds = round((self.mpanel.media.length / 1000))))}"
+                f"Current position, {str(timedelta(seconds = round((self.mpanel.media.player.gtime_pos / 1000))))} elapsed of {str(timedelta(seconds = round((self.mpanel.media.length))))}"
             )
         if keycode == wx.WXK_SPACE:
             if self.mpanel.media.state == utils.MediaState.paused:
