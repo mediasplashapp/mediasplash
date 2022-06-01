@@ -35,7 +35,6 @@ class MediaPanel(wx.Panel):
         self.subtitles = subtitles.handler.SubHandler(self)
 
     def onTimer(self, event):
-        self.media.update()
         self.subtitles.update()
 
     def onQueueTimer(self, event):
@@ -57,6 +56,6 @@ class MediaPanel(wx.Panel):
         self.frame.SetTitle(f"{file} mediasplash")
         self.media.load(dir, file)
         self.subtitles.load(dir, file)
-        self.audio_tracks_set()
+        #self.audio_tracks_set()
         self.timer.Start(50)
         self.queue_timer.Start(50)
