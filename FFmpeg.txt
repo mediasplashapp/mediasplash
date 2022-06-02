@@ -1,2 +1,0 @@
-This project uses FFmpeg binaries built under the gpl from a system call, The binaries and sources could be found at
-https://github.com/BtbN/FFmpeg-Builds/
