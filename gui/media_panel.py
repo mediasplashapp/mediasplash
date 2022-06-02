@@ -40,6 +40,13 @@ class MediaPanel(wx.Panel):
     def onQueueTimer(self, event):
         self.subtitles.on_queue()
 
+    def audio_devices_set(self):
+        devices = self.media.player.audio_device_list
+        for i in devices:
+            self.frame.audio_devices_menu.Append(
+                wx.ID_ANY, i['description'], kind=wx.ITEM_RADIO
+            )
+
     def audio_tracks_set(self):
         self.frame.audio_tracks_menu.Clear()
         audio_tracks = utils.generate_track_info(self.media.player.track_list, "audio")

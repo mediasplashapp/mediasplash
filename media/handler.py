@@ -65,6 +65,12 @@ class Media:
     def length(self):
         return self.player.duration
 
+    def find_device(self, device):
+        devices = self.player.audio_device_list
+        for i in devices:
+            if i['name'] == device:
+                return i['description']
+
     def next_chapter(self):
         if self.player.chapter == self.player.chapters:
             return

@@ -30,3 +30,9 @@ class ClearableMenu(wx.Menu):
         for i in items:
             if i.IsChecked():
                 return i
+
+    def GetByName(self, name):
+        items = self.GetMenuItems()
+        for i in items:
+            if i.GetItemLabelText() == name:
+                return i

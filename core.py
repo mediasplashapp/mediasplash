@@ -59,6 +59,8 @@ class Main(wx.Frame):
         self.jumpItem = self.mediaMenu.Append(wx.ID_ANY, "Jump to...\tctrl+J")
         self.audio_tracks_menu = custom_controls.ClearableMenu()
         self.mediaMenu.AppendSubMenu(self.audio_tracks_menu, "Audio tracks")
+        self.audio_devices_menu = custom_controls.ClearableMenu()
+        self.mediaMenu.AppendSubMenu(self.audio_devices_menu, "Audio output device")
         self.menubar.Append(self.mediaMenu, "&Media")
         self.helpMenu = wx.Menu()
         self.updateCheck = self.helpMenu.Append(wx.ID_ANY, "Check for updates...")
@@ -68,7 +70,6 @@ class Main(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
         self.Bind(wx.EVT_MENU, self.about, self.fileAbout)
         self.Bind(wx.EVT_MENU, self.onUpdateCheck, self.updateCheck)
-
         self.Bind(
             wx.EVT_MENU, self.mpanel.subtitles.subtitle_select, self.subtitleSelectMenu
         )
@@ -79,7 +80,9 @@ class Main(wx.Frame):
         self.Bind(wx.EVT_MENU, lambda event: self.Close(), self.exit_item)
         self.Bind(wx.EVT_MENU, self.on_jump, self.jumpItem)
         self.audio_tracks_menu.Bind(wx.EVT_MENU, self.audio_track_set)
+        self.audio_devices_menu.Bind(wx.EVT_MENU, self.audio_device_set)
         self.Bind(wx.EVT_CLOSE, self.onClose)
+        self.mpanel.audio_devices_set()
         self.data = dm(os.path.join(info.data_path, "config.json"))
         self.load()
 
@@ -91,7 +94,7 @@ class Main(wx.Frame):
         updateData = update_check.check()
         if updateData:
             if messageBox(self, f"A new update of {info.name} is available. New version: {'.'.join(updateData)}. Download the update now?", "Update available", wx.YES_NO | wx.YES_DEFAULT) == wx.ID_YES:
-                webbrowser.open_new("https://github.com/mohamedSulaimanAlmarzooqi/mediasplash/releases/latest/download/mediasplash_setup.zip")
+                webbrowser.open_new("https://github.com/mediasplashapp/mediasplash/releases/latest/download/mediasplash.zip")
             return
         messageBox(self, "No update found", "No updates", wx.ICON_WARNING)
 
@@ -118,6 +121,14 @@ class Main(wx.Frame):
                 )
                 self.mpanel.subtitles.queue_reset()
 
+    def audio_device_set(self, event):
+        result = self.audio_devices_menu.GetChecked().GetItemLabelText()
+        devices = self.mpanel.media.player.audio_device_list
+        for i in devices:
+            if i['description'] == result:
+                self.mpanel.media.player.audio_device = i['name']
+
+
     def audio_track_set(self, event):
         result = self.audio_tracks_menu.GetChecked().GetItemLabelText()
         tracks = utils.generate_track_info(self.mpanel.media.player.track_list, "audio")
@@ -132,11 +143,16 @@ class Main(wx.Frame):
             self.mpanel.media.player.sub_delay = int(self.data.get("subtitle_delay"))
         if self.data.exists("volume"):
             self.mpanel.media.player.volume = int(self.data.get("volume"))
-
+        if self.data.exists("audio_device"):
+            item = self.audio_devices_menu.GetByName(self.mpanel.media.find_device(self.data.get("audio_device")))
+            if item:
+                item.Check(True)
+                self.mpanel.media.player.audio_device = self.data.get("audio_device")
 
     def save(self):
         self.data.add("subtitle_delay", self.mpanel.subtitles.delay_by)
         self.data.add("volume", self.mpanel.media.player.volume)
+        self.data.add("audio_device", self.mpanel.media.player.audio_device)
         self.data.save()
 
     def onClose(self, event):

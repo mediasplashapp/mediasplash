@@ -2,6 +2,10 @@
 ## Version 1.2.0
 ### Changes
 - Moves to the mpv library for media handling instead of vlc, This also removes the requirement of having an external program installed with this.
+### Fixes
+- Fixed changing subtitles wouldn't change it visually.
+### Features
+- You can now select audio devices, They save at program exit.
 
 ## Version 1.1.0:
 ### features

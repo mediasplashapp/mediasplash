@@ -19,7 +19,6 @@
 import pysubs2
 from . import reader
 import tempfile
-import vlc
 import logging
 from misc import utils
 import os
