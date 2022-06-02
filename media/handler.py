@@ -53,14 +53,27 @@ class Media:
     def load(self, dir, file):
         self.dir = dir
         self.file = file
+        self.panel.frame.save()
+        self.player = mpv.MPV(wid = self.panel.GetHandle())
+        self.panel.frame.load()
         self.player.play(os.path.join(dir, file))
-        self.player.wait_until_playing()
+        self.player.wait_until_playing(3.0)
         if hasattr(self.__dict__, "length"):
             del self.__dict__["length"]
 
     @cached_property
     def length(self):
         return self.player.duration
+
+    def next_chapter(self):
+        if self.player.chapter == self.player.chapters:
+            return
+        self.player.chapter = self.player.chapter + 1
+
+    def previous_chapter(self):
+        if self.player.chapter == 1:
+            return
+        self.player.chapter = self.player.chapter - 1
 
     def next_file(self):
         if not self.dir or not self.file:

@@ -129,10 +129,10 @@ class Main(wx.Frame):
 
     def audio_track_set(self, event):
         result = self.audio_tracks_menu.GetChecked().GetItemLabelText()
-        tracks = self.mpanel.media.player.audio_get_track_description()
-        for i in tracks[1:]:
-            if i[1].decode("utf-8") == result:
-                self.mpanel.media.player.audio_set_track(i[0])
+        tracks = utils.generate_track_info(self.mpanel.media.player.track_list, "audio")
+        for (val, i) in enumerate(tracks):
+            if i == result:
+                self.mpanel.media.player.aid = val + 1
 
     def load(self):
         self.data.load()
@@ -146,7 +146,6 @@ class Main(wx.Frame):
     def save(self):
         self.data.add("subtitle_delay", self.mpanel.subtitles.delay_by)
         self.data.add("volume", self.mpanel.media.player.volume)
-
         self.data.save()
 
     def onClose(self, event):
@@ -167,10 +166,10 @@ class Main(wx.Frame):
             self.mpanel.media.next_file()
 
         if keycode == ord("."):
-            self.mpanel.media.player.next_chapter()
+            self.mpanel.media.next_chapter()
             self.mpanel.subtitles.queue_reset()
         if keycode == ord(","):
-            self.mpanel.media.player.previous_chapter()
+            self.mpanel.media.previous_chapter()
             self.mpanel.subtitles.queue_reset()
 
         if keycode == wx.WXK_DOWN and self.mpanel.media.player.volume > 0:
@@ -188,7 +187,7 @@ class Main(wx.Frame):
                 val = 60
             if controlDown:
                 val = 30
-            self.mpanel.media.player.time_pos = fmod(self.mpanel.media.player.time_pos + val, self.mpanel.media.player.duration)
+            self.mpanel.media.player.command("seek", val)
             self.mpanel.subtitles.queue_reset()
 
         if keycode == wx.WXK_LEFT:
@@ -197,15 +196,15 @@ class Main(wx.Frame):
                 val = 60
             if controlDown:
                 val = 30
-            self.mpanel.media.player.time_pos = fmod(self.mpanel.media.player.time_pos - val, self.mpanel.media.player.duration)
+            self.mpanel.media.player.command("seek", -val)
             self.mpanel.subtitles.queue_reset()
         if keycode == wx.WXK_HOME:
-            self.mpanel.media.player.command("seek", 0.0, "absolute")
+            self.mpanel.media.player.time_pos = 0.0
             self.mpanel.subtitles.queue_reset()
 
         if keycode == ord("P"):
             speak(
-                f"Current position, {str(timedelta(seconds = round((self.mpanel.media.player.gtime_pos / 1000))))} elapsed of {str(timedelta(seconds = round((self.mpanel.media.length))))}"
+                f"Current position, {str(timedelta(seconds = round(self.mpanel.media.player.time_pos)))} elapsed of {str(timedelta(seconds = round(self.mpanel.media.length)))}"
             )
         if keycode == wx.WXK_SPACE:
             if self.mpanel.media.state == utils.MediaState.paused:
