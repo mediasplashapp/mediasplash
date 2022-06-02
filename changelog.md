@@ -1,4 +1,8 @@
 # MediaSplash changelog
+## Version 1.2.0
+### Changes
+- Moves to the mpv library for media handling instead of vlc, This also removes the requirement of having an external program installed with this.
+
 ## Version 1.1.0:
 ### features
 - The program can now check for updates, it can be done from the help menu in the menu bar.

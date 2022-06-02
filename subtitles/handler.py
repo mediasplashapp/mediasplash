@@ -167,6 +167,10 @@ class SubHandler:
                 )
                 return
             self.subtitle = self.subtitles[sub][1]
+            subs = utils.generate_track_info(self.panel.media.player.track_list, "subtitle")
+            for (val, i) in enumerate(subs):
+                if i == sub:
+                    self.panel.media.player.sub = val + 1
             self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
 
     def queue_reset(self):
@@ -195,6 +199,7 @@ class SubHandler:
             self.subtitle_handler = pysubs2.load(
                 os.path.join(dir, file), encoding="utf-8"
             )
+            self.panel.media.player.sub_add(os.path.join(dir, file))
         except Exception:
             logging.error("Could not load subtitles", exc_info=True)
             wx.MessageBox(

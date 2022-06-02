@@ -34,16 +34,7 @@ import wx
 from cytolk import tolk
 from cytolk.tolk import speak
 
-try:
-    from gui.media_panel import MediaPanel
-except FileNotFoundError:
-    import ctypes
-
-    ctypes.windll.user32.MessageBoxW(
-        None, "Vlc not found. Please install Vlc 64 bit 3.0 or later", "Error", 0x10
-    )
-    sys.exit()
-
+from gui.media_panel import MediaPanel
 
 class Main(wx.Frame):
     def __init__(self, app):
