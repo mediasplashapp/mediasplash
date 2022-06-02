@@ -11,7 +11,7 @@ import requests
 from globals import info
 
 
-URL = "https://api.github.com/repos/mohamedSulaimanAlmarzooqi/mediasplash/releases/latest"
+URL = "https://api.github.com/repos/mediasplashapp/mediasplash/releases/latest"
 
 
 def check():

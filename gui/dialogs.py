@@ -73,7 +73,7 @@ class AboutDialog(wx.Dialog):
             wx.adv.HyperlinkCtrl(
                 self,
                 label="Homepage",
-                url="https://github.com/mohamedSulaimanAlmarzooqi/mediasplash",
+                url="https://github.com/mediasplashapp/mediasplash",
             )
         )
         link_sizer.Add(
