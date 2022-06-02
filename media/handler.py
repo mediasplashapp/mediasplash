@@ -16,10 +16,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import vlc
 import os
+os.add_dll_directory(os.getcwd())
+
+import mpv
 from misc import utils
 from functools import cached_property
+
 
 supported_media = (
     ".mp3",
@@ -40,30 +43,37 @@ class Media:
         self.dir = ""
         self.file = ""
         self.state = utils.MediaState.neverPlayed
-        self.instance = vlc.Instance()
-        self.player: vlc.MediaPlayer = self.instance.media_player_new()
-        self.media = None
-        self.player.set_hwnd(self.panel.GetHandle())
-        self.manager: vlc.EventManager = self.player.event_manager()
-        self.player.set_fullscreen(True)
+        self.player: mpv.MPV = mpv.MPV(wid = self.panel.GetHandle())
+        #self.player.set_hwnd(self.panel.GetHandle())
 
-    def update(self):
-        if self.player.get_state() == vlc.State.Ended:
-            self.onStop()
+    #def update(self):
+    #    if self.player.get_state() == vlc.State.Ended:
+    #        self.onStop()
 
     def load(self, dir, file):
         self.dir = dir
         self.file = file
-        self.media = self.instance.media_new(os.path.join(dir, file))
-        self.player.set_media(self.media)
-        self.player.video_set_spu_delay(self.panel.subtitles.delay_by)
+        self.panel.frame.save()
+        self.player = mpv.MPV(wid = self.panel.GetHandle())
+        self.panel.frame.load()
+        self.player.play(os.path.join(dir, file))
+        self.player.wait_until_playing(3.0)
         if hasattr(self.__dict__, "length"):
             del self.__dict__["length"]
-        self.onPlay()
 
     @cached_property
     def length(self):
-        return self.player.get_length()
+        return self.player.duration
+
+    def next_chapter(self):
+        if self.player.chapter == self.player.chapters:
+            return
+        self.player.chapter = self.player.chapter + 1
+
+    def previous_chapter(self):
+        if self.player.chapter == 1:
+            return
+        self.player.chapter = self.player.chapter - 1
 
     def next_file(self):
         if not self.dir or not self.file:
@@ -90,14 +100,12 @@ class Media:
                 break
 
     def onPlay(self):
-        if self.player.get_media():
-            self.player.play()
+        self.player.pause = False
         if self.state != utils.MediaState.playing:
             self.state = utils.MediaState.playing
 
     def onPause(self):
-        if self.player.get_media():
-            self.player.pause()
+        self.player.pause = True
         if self.state != utils.MediaState.paused:
             self.state = utils.MediaState.paused
 

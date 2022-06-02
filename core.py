@@ -18,6 +18,8 @@
 
 import sys
 import os
+import math
+from math import fmod
 from data_manager import DataManager as dm
 from gui import dialogs, messageBox
 from globals import info
@@ -118,40 +120,39 @@ class Main(wx.Frame):
                     delta = timedelta(minutes = value[0])
                 elif len(value) == 3:
                     delta = timedelta(hours = value[0], minutes = value[1], seconds = value[2])
-                if not delta or delta.total_seconds() * 1000 > self.mpanel.media.length:
+                if not delta or delta.total_seconds() > self.mpanel.media.length:
                     messageBox(self, "input is not valid", "Error", wx.ICON_ERROR)
                 self.mpanel.media.player.set_position(
-                    round(delta.total_seconds() * 1000) / self.mpanel.media.length
+                    round(delta.total_seconds()) / self.mpanel.media.duration
                 )
                 self.mpanel.subtitles.queue_reset()
 
     def audio_track_set(self, event):
         result = self.audio_tracks_menu.GetChecked().GetItemLabelText()
-        tracks = self.mpanel.media.player.audio_get_track_description()
-        for i in tracks[1:]:
-            if i[1].decode("utf-8") == result:
-                self.mpanel.media.player.audio_set_track(i[0])
+        tracks = utils.generate_track_info(self.mpanel.media.player.track_list, "audio")
+        for (val, i) in enumerate(tracks):
+            if i == result:
+                self.mpanel.media.player.aid = val + 1
 
     def load(self):
         self.data.load()
         if self.data.exists("subtitle_delay"):
             self.mpanel.subtitles.delay_by = int(self.data.get("subtitle_delay"))
-            self.mpanel.media.player.video_set_spu_delay(
-                int(self.data.get("subtitle_delay"))
-            )
+            self.mpanel.media.player.sub_delay = int(self.data.get("subtitle_delay"))
+        if self.data.exists("volume"):
+            self.mpanel.media.player.volume = int(self.data.get("volume"))
+
 
     def save(self):
         self.data.add("subtitle_delay", self.mpanel.subtitles.delay_by)
+        self.data.add("volume", self.mpanel.media.player.volume)
         self.data.save()
 
     def onClose(self, event):
         self.save()
         self.mpanel.subtitles.destroy()
         self.mpanel.media.onStop()
-        if self.mpanel.media.media:
-            self.mpanel.media.media.release()
-        self.mpanel.media.player.release()
-        self.mpanel.media.instance.release()
+        self.mpanel.media.player.terminate()
         wx.CallAfter(self.Destroy)
 
     def onKeyPress(self, event):
@@ -165,49 +166,45 @@ class Main(wx.Frame):
             self.mpanel.media.next_file()
 
         if keycode == ord("."):
-            self.mpanel.media.player.next_chapter()
+            self.mpanel.media.next_chapter()
             self.mpanel.subtitles.queue_reset()
         if keycode == ord(","):
-            self.mpanel.media.player.previous_chapter()
+            self.mpanel.media.previous_chapter()
             self.mpanel.subtitles.queue_reset()
 
-        if keycode == wx.WXK_DOWN and self.mpanel.media.player.audio_get_volume() > 0:
-            vol = self.mpanel.media.player.audio_get_volume()
-            self.mpanel.media.player.audio_set_volume(vol - 5)
-            speak(f"{vol - 5}%")
-        if keycode == wx.WXK_UP and self.mpanel.media.player.audio_get_volume() < 200:
-            vol = self.mpanel.media.player.audio_get_volume()
-            self.mpanel.media.player.audio_set_volume(vol + 5)
-            speak(f"{vol + 5}%")
+        if keycode == wx.WXK_DOWN and self.mpanel.media.player.volume > 0:
+            vol = self.mpanel.media.player.volume
+            self.mpanel.media.player.volume = vol - 5
+            speak(f"{math.floor(vol - 5)}%")
+        if keycode == wx.WXK_UP and self.mpanel.media.player.volume < 100:
+            vol = self.mpanel.media.player.volume
+            self.mpanel.media.player.volume = vol + 5
+            speak(f"{math.floor(vol + 5)}%")
 
         if keycode == wx.WXK_RIGHT:
-            val = 5000
+            val = 5
             if altDown:
-                val = 60000
+                val = 60
             if controlDown:
-                val = 30000
-            self.mpanel.media.player.set_position(
-                (self.mpanel.media.player.get_time() + val) / self.mpanel.media.length
-            )
+                val = 30
+            self.mpanel.media.player.command("seek", val)
             self.mpanel.subtitles.queue_reset()
 
         if keycode == wx.WXK_LEFT:
-            val = 5000
+            val = 5
             if altDown:
-                val = 60000
+                val = 60
             if controlDown:
-                val = 30000
-            self.mpanel.media.player.set_position(
-                (self.mpanel.media.player.get_time() - val) / self.mpanel.media.length
-            )
+                val = 30
+            self.mpanel.media.player.command("seek", -val)
             self.mpanel.subtitles.queue_reset()
         if keycode == wx.WXK_HOME:
-            self.mpanel.media.player.set_position(0)
+            self.mpanel.media.player.time_pos = 0.0
             self.mpanel.subtitles.queue_reset()
 
         if keycode == ord("P"):
             speak(
-                f"Current position, {str(timedelta(seconds = round((self.mpanel.media.player.get_time() / 1000))))} elapsed of {str(timedelta(seconds = round((self.mpanel.media.length / 1000))))}"
+                f"Current position, {str(timedelta(seconds = round(self.mpanel.media.player.time_pos)))} elapsed of {str(timedelta(seconds = round(self.mpanel.media.length)))}"
             )
         if keycode == wx.WXK_SPACE:
             if self.mpanel.media.state == utils.MediaState.paused:

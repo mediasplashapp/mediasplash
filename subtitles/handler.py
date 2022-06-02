@@ -63,7 +63,7 @@ class SubHandler:
         end = timedelta(
             milliseconds = self.subtitle_handler[self.index].end + self.delay_by
         )
-        current = timedelta(milliseconds = self.panel.media.player.get_time())
+        current = timedelta(seconds = self.panel.media.player.time_pos)
         if current >= start and current <= end:
             self.queue.append(self.subtitle_handler[self.index].plaintext)
             self.processed_events.append(
@@ -79,7 +79,7 @@ class SubHandler:
                 continue
             start = timedelta(milliseconds=i.start + self.delay_by)
             end = timedelta(milliseconds=i.end + self.delay_by)
-            current = timedelta(milliseconds = self.panel.media.player.get_time())
+            current = timedelta(seconds = self.panel.media.player.time_pos)
             if current >= start and current <= end:
                 self.queue.append(i.plaintext)
                 self.processed_events.append(utils.get_subtitle_tuple(i))
@@ -141,7 +141,7 @@ class SubHandler:
             if r == wx.ID_OK:
                 val = dlg.intctrl.GetValue()
                 self.delay_by = int(val)
-                self.panel.media.player.video_set_spu_delay(int(val))
+                self.panel.media.player.sub_delay = int(val)
                 speak(f"Subtitle delay set to {self.delay_by}", True)
 
     def subtitle_select(self, event=None):
@@ -167,9 +167,6 @@ class SubHandler:
                 )
                 return
             self.subtitle = self.subtitles[sub][1]
-            for i in self.panel.media.player.video_get_spu_description():
-                if i[1].decode('utf-8') == sub:
-                    self.panel.media.player.video_set_spu(i[0])
             self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
 
     def queue_reset(self):
@@ -186,7 +183,7 @@ class SubHandler:
         for (val, i) in enumerate(self.subtitle_handler):
             start = timedelta(milliseconds=i.start + self.delay_by)
             end = timedelta(milliseconds=i.end + self.delay_by)
-            current = timedelta(milliseconds = self.panel.media.player.get_time())
+            current = timedelta(seconds = self.panel.media.player.time_pos)
             if current >= start and current <= end:
                 self.queue.append(i.plaintext)
                 self.processed_events.append(utils.get_subtitle_tuple(i))
@@ -198,7 +195,6 @@ class SubHandler:
             self.subtitle_handler = pysubs2.load(
                 os.path.join(dir, file), encoding="utf-8"
             )
-            self.panel.media.player.add_slave(vlc.MediaSlaveType(2), os.path.join(dir, file), True)
         except Exception:
             logging.error("Could not load subtitles", exc_info=True)
             wx.MessageBox(
