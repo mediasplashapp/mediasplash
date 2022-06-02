@@ -23,14 +23,13 @@ from globals import info
 
 
 class SubtitleSelect(wx.Dialog):
-    def __init__(self, handle):
-        super().__init__(handle.panel.frame, title="Select a subtitle")
+    def __init__(self, parent, subtitles):
+        super().__init__(parent, title="Select a subtitle")
         box = wx.BoxSizer()
         gbox_sizer = wx.StaticBoxSizer(wx.VERTICAL, self, "Subtitles")
         gbox = gbox_sizer.GetStaticBox()
         gbox_sizer.Add(wx.StaticText(gbox, label="Subtitles:"))
-        subtitles = handle.stringify_subtitles()
-        self.subtitle_select = wx.Choice(gbox, choices=subtitles)
+        self.subtitle_select = wx.Choice(gbox, choices = subtitles)
         gbox_sizer.Add(self.subtitle_select)
         box.Add(gbox_sizer)
         box.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL))
@@ -39,8 +38,8 @@ class SubtitleSelect(wx.Dialog):
 
 
 class SubDelay(wx.Dialog):
-    def __init__(self, handle, title, value):
-        super().__init__(handle.panel.frame, title=title)
+    def __init__(self, parent, value):
+        super().__init__(parent, title="Subtitle delay by:")
         box = wx.BoxSizer()
         self.intctrl = IntCtrl(self, value=int(value), allow_none=False)
         box.Add(self.intctrl)

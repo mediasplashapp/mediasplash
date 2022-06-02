@@ -16,8 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import subtitles.handler
 import wx
+from gui.dialogs import SubDelay
 from media.handler import Media
 from misc import utils
 
@@ -28,17 +28,14 @@ class MediaPanel(wx.Panel):
         self.SetBackgroundColour(wx.BLACK)
         self.frame = parent
         self.media = Media(self)
-        self.timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.onTimer, self.timer)
-        self.queue_timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.onQueueTimer, self.queue_timer)
-        self.subtitles = subtitles.handler.SubHandler(self)
 
-    def onTimer(self, event):
-        self.subtitles.update()
-
-    def onQueueTimer(self, event):
-        self.subtitles.on_queue()
+    def delay_set(self):
+        with SubDelay(self.frame, self.media.player.sub_delay) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                if not dlg.intctrl.GetValue():
+                    self.media.player.sub_delay = 0
+                else:
+                    self.media.player.sub_delay = dlg.intctrl.GetValue()
 
     def audio_devices_set(self):
         devices = self.media.player.audio_device_list
@@ -57,12 +54,7 @@ class MediaPanel(wx.Panel):
 
     def doLoadFile(self, file, dir):
         self.media.onStop()
-        self.timer.Stop()
         self.frame.audio_tracks_menu.Clear()
-        self.subtitles.destroy()
         self.frame.SetTitle(f"{file} mediasplash")
         self.media.load(dir, file)
-        self.subtitles.load(dir, file)
         self.audio_tracks_set()
-        self.timer.Start(50)
-        self.queue_timer.Start(50)

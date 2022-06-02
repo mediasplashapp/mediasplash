@@ -1,6 +1,5 @@
 wxpython
 cytolk
-pysubs2
 python-mpv
 nuitka
 requests

@@ -18,10 +18,11 @@
 
 import os
 os.add_dll_directory(os.getcwd())
-
+from . import observers
 import mpv
 from misc import utils
 from functools import cached_property
+from cytolk import tolk
 
 
 supported_media = (
@@ -44,26 +45,21 @@ class Media:
         self.file = ""
         self.state = utils.MediaState.neverPlayed
         self.player: mpv.MPV = mpv.MPV(wid = self.panel.GetHandle())
-        #self.player.set_hwnd(self.panel.GetHandle())
+        observers.register_observers(self.player)
 
-    #def update(self):
-    #    if self.player.get_state() == vlc.State.Ended:
-    #        self.onStop()
 
     def load(self, dir, file):
         self.dir = dir
         self.file = file
-        self.panel.frame.save()
-        self.player = mpv.MPV(wid = self.panel.GetHandle())
-        self.panel.frame.load()
         self.player.play(os.path.join(dir, file))
-        self.player.wait_until_playing(3.0)
+        self.player.wait_until_playing()
         if hasattr(self.__dict__, "length"):
             del self.__dict__["length"]
 
     @cached_property
     def length(self):
         return self.player.duration
+
 
     def find_device(self, device):
         devices = self.player.audio_device_list
@@ -116,5 +112,4 @@ class Media:
             self.state = utils.MediaState.paused
 
     def onStop(self):
-        self.panel.subtitles.queue_reset()
         self.player.stop()

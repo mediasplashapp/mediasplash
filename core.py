@@ -70,12 +70,9 @@ class Main(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
         self.Bind(wx.EVT_MENU, self.about, self.fileAbout)
         self.Bind(wx.EVT_MENU, self.onUpdateCheck, self.updateCheck)
-        self.Bind(
-            wx.EVT_MENU, self.mpanel.subtitles.subtitle_select, self.subtitleSelectMenu
-        )
         self.Bind(wx.EVT_MENU, self.onLoadSubtitle, self.subtitleOpen)
         self.Bind(
-            wx.EVT_MENU, lambda event: self.mpanel.subtitles.delay_set(), self.subDelay
+            wx.EVT_MENU, lambda event: self.mpanel.delay_set(), self.subDelay
         )
         self.Bind(wx.EVT_MENU, lambda event: self.Close(), self.exit_item)
         self.Bind(wx.EVT_MENU, self.on_jump, self.jumpItem)
@@ -119,7 +116,6 @@ class Main(wx.Frame):
                 self.mpanel.media.player.set_position(
                     round(delta.total_seconds()) / self.mpanel.media.duration
                 )
-                self.mpanel.subtitles.queue_reset()
 
     def audio_device_set(self, event):
         result = self.audio_devices_menu.GetChecked().GetItemLabelText()
@@ -139,7 +135,6 @@ class Main(wx.Frame):
     def load(self):
         self.data.load()
         if self.data.exists("subtitle_delay"):
-            self.mpanel.subtitles.delay_by = int(self.data.get("subtitle_delay"))
             self.mpanel.media.player.sub_delay = int(self.data.get("subtitle_delay"))
         if self.data.exists("volume"):
             self.mpanel.media.player.volume = int(self.data.get("volume"))
@@ -150,14 +145,13 @@ class Main(wx.Frame):
                 self.mpanel.media.player.audio_device = self.data.get("audio_device")
 
     def save(self):
-        self.data.add("subtitle_delay", self.mpanel.subtitles.delay_by)
+        self.data.add("subtitle_delay", self.mpanel.media.player.sub_delay)
         self.data.add("volume", self.mpanel.media.player.volume)
         self.data.add("audio_device", self.mpanel.media.player.audio_device)
         self.data.save()
 
     def onClose(self, event):
         self.save()
-        self.mpanel.subtitles.destroy()
         self.mpanel.media.onStop()
         self.mpanel.media.player.terminate()
         wx.CallAfter(self.Destroy)
@@ -167,6 +161,8 @@ class Main(wx.Frame):
         controlDown = event.CmdDown()
         altDown = event.AltDown()
         shiftDown = event.ShiftDown()
+        if keycode == ord("R"):
+            speak(str(self.mpanel.media.player.sub_text))
         if keycode == wx.WXK_PAGEUP:
             self.mpanel.media.previous_file()
         if keycode == wx.WXK_PAGEDOWN:
@@ -174,10 +170,8 @@ class Main(wx.Frame):
 
         if keycode == ord("."):
             self.mpanel.media.next_chapter()
-            self.mpanel.subtitles.queue_reset()
         if keycode == ord(","):
             self.mpanel.media.previous_chapter()
-            self.mpanel.subtitles.queue_reset()
 
         if keycode == wx.WXK_DOWN and self.mpanel.media.player.volume > 0:
             vol = self.mpanel.media.player.volume
@@ -195,7 +189,6 @@ class Main(wx.Frame):
             if controlDown:
                 val = 30
             self.mpanel.media.player.command("seek", val)
-            self.mpanel.subtitles.queue_reset()
 
         if keycode == wx.WXK_LEFT:
             val = 5
@@ -204,10 +197,8 @@ class Main(wx.Frame):
             if controlDown:
                 val = 30
             self.mpanel.media.player.command("seek", -val)
-            self.mpanel.subtitles.queue_reset()
         if keycode == wx.WXK_HOME:
             self.mpanel.media.player.time_pos = 0.0
-            self.mpanel.subtitles.queue_reset()
 
         if keycode == ord("P"):
             speak(
@@ -235,10 +226,8 @@ class Main(wx.Frame):
             message="Select a subtitle file",
         ) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
-                dir = dlg.GetDirectory()
-                file = dlg.GetFilename()
-                self.mpanel.subtitles.doLoadSubtitle(file, dir)
-
+                path = dlg.GetPath()
+                self.mpanel.media.player.sub_add(path)
 
 class LogRedirector:
     def __init__(self, level):
