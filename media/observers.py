@@ -45,7 +45,7 @@ class ObserverManager:
         for line in difflib.ndiff(self.prev_value, value):
             if line.startswith("+ ") and line[2:].strip():
                 logging.debug(f"new line {line}")
-                tolk.speak(line[:2])
+                tolk.speak(line[2:])
         self.prev_value = value
 
     def register_observers(self):
