@@ -17,6 +17,7 @@
 """
 
 import os
+
 os.add_dll_directory(os.getcwd())
 
 import mpv
@@ -43,18 +44,13 @@ class Media:
         self.dir = ""
         self.file = ""
         self.state = utils.MediaState.neverPlayed
-        self.player: mpv.MPV = mpv.MPV(wid = self.panel.GetHandle())
-        #self.player.set_hwnd(self.panel.GetHandle())
-
-    #def update(self):
-    #    if self.player.get_state() == vlc.State.Ended:
-    #        self.onStop()
+        self.player: mpv.MPV = mpv.MPV(wid=self.panel.GetHandle())
 
     def load(self, dir, file):
         self.dir = dir
         self.file = file
         self.panel.frame.save()
-        self.player = mpv.MPV(wid = self.panel.GetHandle())
+        self.player = mpv.MPV(wid=self.panel.GetHandle())
         self.panel.frame.load()
         self.player.play(os.path.join(dir, file))
         self.player.wait_until_playing(3.0)
@@ -68,8 +64,8 @@ class Media:
     def find_device(self, device):
         devices = self.player.audio_device_list
         for i in devices:
-            if i['name'] == device:
-                return i['description']
+            if i["name"] == device:
+                return i["description"]
 
     def next_chapter(self):
         if self.player.chapter == self.player.chapters:

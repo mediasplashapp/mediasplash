@@ -36,6 +36,7 @@ from cytolk.tolk import speak
 
 from gui.media_panel import MediaPanel
 
+
 class Main(wx.Frame):
     def __init__(self, app):
         super().__init__(None, title="mediasplash")
@@ -93,8 +94,18 @@ class Main(wx.Frame):
     def onUpdateCheck(self, event):
         updateData = update_check.check()
         if updateData:
-            if messageBox(self, f"A new update of {info.name} is available. New version: {'.'.join(updateData)}. Download the update now?", "Update available", wx.YES_NO | wx.YES_DEFAULT) == wx.ID_YES:
-                webbrowser.open_new("https://github.com/mediasplashapp/mediasplash/releases/latest/download/mediasplash.zip")
+            if (
+                messageBox(
+                    self,
+                    f"A new update of {info.name} is available. New version: {'.'.join(updateData)}. Download the update now?",
+                    "Update available",
+                    wx.YES_NO | wx.YES_DEFAULT,
+                )
+                == wx.ID_YES
+            ):
+                webbrowser.open_new(
+                    "https://github.com/mediasplashapp/mediasplash/releases/latest/download/mediasplash.zip"
+                )
             return
         messageBox(self, "No update found", "No updates", wx.ICON_WARNING)
 
@@ -111,9 +122,11 @@ class Main(wx.Frame):
                 if len(value) == 2:
                     delta = timedelta(minutes=value[0], seconds=value[1])
                 elif len(value) == 1:
-                    delta = timedelta(minutes = value[0])
+                    delta = timedelta(minutes=value[0])
                 elif len(value) == 3:
-                    delta = timedelta(hours = value[0], minutes = value[1], seconds = value[2])
+                    delta = timedelta(
+                        hours=value[0], minutes=value[1], seconds=value[2]
+                    )
                 if not delta or delta.total_seconds() > self.mpanel.media.length:
                     messageBox(self, "input is not valid", "Error", wx.ICON_ERROR)
                 self.mpanel.media.player.set_position(
@@ -125,9 +138,8 @@ class Main(wx.Frame):
         result = self.audio_devices_menu.GetChecked().GetItemLabelText()
         devices = self.mpanel.media.player.audio_device_list
         for i in devices:
-            if i['description'] == result:
-                self.mpanel.media.player.audio_device = i['name']
-
+            if i["description"] == result:
+                self.mpanel.media.player.audio_device = i["name"]
 
     def audio_track_set(self, event):
         result = self.audio_tracks_menu.GetChecked().GetItemLabelText()
@@ -144,7 +156,9 @@ class Main(wx.Frame):
         if self.data.exists("volume"):
             self.mpanel.media.player.volume = int(self.data.get("volume"))
         if self.data.exists("audio_device"):
-            item = self.audio_devices_menu.GetByName(self.mpanel.media.find_device(self.data.get("audio_device")))
+            item = self.audio_devices_menu.GetByName(
+                self.mpanel.media.find_device(self.data.get("audio_device"))
+            )
             if item:
                 item.Check(True)
                 self.mpanel.media.player.audio_device = self.data.get("audio_device")

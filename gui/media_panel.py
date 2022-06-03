@@ -21,6 +21,7 @@ import wx
 from media.handler import Media
 from misc import utils
 
+
 class MediaPanel(wx.Panel):
     def __init__(self, parent):
         super().__init__(parent, style=wx.WANTS_CHARS)
@@ -35,21 +36,18 @@ class MediaPanel(wx.Panel):
     def onTimer(self, event):
         self.subtitles.update()
 
-
     def audio_devices_set(self):
         devices = self.media.player.audio_device_list
         for i in devices:
             self.frame.audio_devices_menu.Append(
-                wx.ID_ANY, i['description'], kind=wx.ITEM_RADIO
+                wx.ID_ANY, i["description"], kind=wx.ITEM_RADIO
             )
 
     def audio_tracks_set(self):
         self.frame.audio_tracks_menu.Clear()
         audio_tracks = utils.generate_track_info(self.media.player.track_list, "audio")
         for i in audio_tracks:
-            self.frame.audio_tracks_menu.Append(
-                wx.ID_ANY, i, kind=wx.ITEM_RADIO
-            )
+            self.frame.audio_tracks_menu.Append(wx.ID_ANY, i, kind=wx.ITEM_RADIO)
 
     def doLoadFile(self, file, dir):
         self.media.onStop()

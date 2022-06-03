@@ -83,7 +83,9 @@ class AboutDialog(wx.Dialog):
         )
         link_sizer.Add(
             wx.adv.HyperlinkCtrl(
-                self, label = "Donate", url = "https://www.paypal.com/donate/?hosted_button_id=4M3SJPRA8AQUW"
+                self,
+                label="Donate",
+                url="https://www.paypal.com/donate/?hosted_button_id=4M3SJPRA8AQUW",
             )
         )
         sizer.Add(link_sizer, 0, wx.ALL, 5)

@@ -23,15 +23,17 @@ from enum import Enum
 
 supported_subtitles = (".ass", ".ssa", ".srt")
 
+
 def generate_track_info(origin, type):
     final = []
     for i in origin:
-        if not "type" in i: continue
-        if i['type'] == type:
-            if not "title" in i or i['title'] == '':
-                final.append(i['lang'])
+        if not "type" in i:
+            continue
+        if i["type"] == type:
+            if not "title" in i or i["title"] == "":
+                final.append(i["lang"])
             else:
-                final.append(i['title'])
+                final.append(i["title"])
     return final
 
 
@@ -43,7 +45,6 @@ def check_for_similar_subtitles(dir, file):
         if p.with_suffix(i).exists():
             final[filename] = (0, f"{os.path.join(dir, filename)}{i}")
     return final
-
 
 
 def get_subtitle_tuple(sub):

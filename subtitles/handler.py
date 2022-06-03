@@ -58,9 +58,9 @@ class SubHandler:
             milliseconds=self.subtitle_handler.events[self.index].start + self.delay_by
         )
         end = timedelta(
-            milliseconds = self.subtitle_handler[self.index].end + self.delay_by
+            milliseconds=self.subtitle_handler[self.index].end + self.delay_by
         )
-        current = timedelta(seconds = self.panel.media.player.time_pos)
+        current = timedelta(seconds=self.panel.media.player.time_pos)
         if current >= start and current <= end:
             self.speak_sub(self.subtitle_handler[self.index].plaintext)
             self.processed_events.append(
@@ -76,7 +76,7 @@ class SubHandler:
                 continue
             start = timedelta(milliseconds=i.start + self.delay_by)
             end = timedelta(milliseconds=i.end + self.delay_by)
-            current = timedelta(seconds = self.panel.media.player.time_pos)
+            current = timedelta(seconds=self.panel.media.player.time_pos)
             if current >= start and current <= end:
                 self.speak_sub(i.plaintext)
                 self.processed_events.append(utils.get_subtitle_tuple(i))
@@ -104,7 +104,6 @@ class SubHandler:
             self.temp_dir.cleanup()
             self.temp_dir = None
 
-
     def load(self, dir, file):
         self.temp_dir = tempfile.TemporaryDirectory()
         self.subtitles = reader.generate_subtitles(
@@ -124,7 +123,6 @@ class SubHandler:
             self.subtitle = next(iter(external_subs.items()))[1][1]
         if self.subtitles:
             self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
-
 
     def delay_set(self):
         with dialogs.SubDelay(
@@ -160,7 +158,9 @@ class SubHandler:
                 )
                 return
             self.subtitle = self.subtitles[sub][1]
-            subs = utils.generate_track_info(self.panel.media.player.track_list, "subtitle")
+            subs = utils.generate_track_info(
+                self.panel.media.player.track_list, "subtitle"
+            )
             for (val, i) in enumerate(subs):
                 if i == sub:
                     self.panel.media.player.sub = val + 1
@@ -178,12 +178,11 @@ class SubHandler:
         for (val, i) in enumerate(self.subtitle_handler):
             start = timedelta(milliseconds=i.start + self.delay_by)
             end = timedelta(milliseconds=i.end + self.delay_by)
-            current = timedelta(seconds = self.panel.media.player.time_pos)
+            current = timedelta(seconds=self.panel.media.player.time_pos)
             if current >= start and current <= end:
                 self.speak_sub(i.plaintext)
                 self.processed_events.append(utils.get_subtitle_tuple(i))
                 self.index = val
-
 
     def doLoadSubtitle(self, file, dir):
         try:

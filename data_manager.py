@@ -18,7 +18,6 @@ class DataManager:
         self.filename = filename
         self.d = {}
 
-
     def exists(self, item):
         if item in self.d:
             return True

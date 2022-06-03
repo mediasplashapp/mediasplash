@@ -17,4 +17,5 @@
 """
 
 import core
+
 core.main()
