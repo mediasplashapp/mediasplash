@@ -54,13 +54,14 @@ class Media:
         self.dir = dir
         self.file = file
         self.player.play(os.path.join(dir, file))
-        #self.player.wait_until_playing()
+        self.player.wait_until_playing(5.0)
         if hasattr(self.__dict__, "length"):
             del self.__dict__["length"]
 
     @cached_property
     def length(self):
         return self.player.duration
+
     def select_sub(self):
         with SubtitleSelect(self.panel, self.stringify_subtitles()) as dlg:
             r = dlg.ShowModal()
