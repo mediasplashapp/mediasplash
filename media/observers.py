@@ -9,14 +9,22 @@
 
 from cytolk import tolk
 import logging
+import re
 
+def clean(text):
+    text = re.sub(r"\{.*?\}", "", text)
+    text = re.sub(r"\<.*?\>", "", text)
+    text = re.sub(r"\[.*?\]", "", text)
+    return text
 
 class ObserverManager:
     def __init__(self, player):
         self.player = player
 
     def subtitle_observer(self, name, value):
+        value = self.player.sub_text_ass
         logging.debug(f"property {name} with data {value}")
+        value = clean(value)
         if value:
             value = value.splitlines()
             current_string = ""
@@ -24,7 +32,7 @@ class ObserverManager:
                 current_string += line
                 if line.endswith(" "):
                     continue
-                tolk.speak(current_string)
+                tolk.speak(current_string.replace(r"\N", ""))
                 current_string = ""
 
     def register_observers(self):
