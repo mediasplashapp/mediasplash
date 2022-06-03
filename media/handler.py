@@ -21,6 +21,8 @@ os.add_dll_directory(os.getcwd())
 from . import observers
 import mpv
 from misc import utils
+import wx
+from gui.dialogs import SubtitleSelect
 from functools import cached_property
 from cytolk import tolk
 
@@ -44,7 +46,7 @@ class Media:
         self.dir = ""
         self.file = ""
         self.state = utils.MediaState.neverPlayed
-        self.player: mpv.MPV = mpv.MPV(wid = self.panel.GetHandle())
+        self.player: mpv.MPV = mpv.MPV(wid = self.panel.GetHandle(), sub_fix_timing = True)
         observers.register_observers(self.player)
 
 
@@ -52,14 +54,42 @@ class Media:
         self.dir = dir
         self.file = file
         self.player.play(os.path.join(dir, file))
-        self.player.wait_until_playing()
+        #self.player.wait_until_playing()
         if hasattr(self.__dict__, "length"):
             del self.__dict__["length"]
 
     @cached_property
     def length(self):
         return self.player.duration
+    def select_sub(self):
+        with SubtitleSelect(self.panel, self.stringify_subtitles()) as dlg:
+            r = dlg.ShowModal()
+            if r != wx.ID_OK:
+                return
+            sub = dlg.subtitle_select.GetString(dlg.subtitle_select.Selection)
+            if not sub:
+                wx.MessageBox(
+                    "There was an error while selecting the subtitle, Please try again.",
+                    "Error:",
+                    wx.ICON_ERROR,
+                )
+                return
+            lst = sub.split(",")
+            self.player.sid = int(lst[1])
 
+    def stringify_subtitles(self):
+        subs = self.player.track_list
+        final = []
+        for i in subs:
+            if i['type'] == 'sub':
+                if 'title' in i and i['title']:
+                    final.append(f"{i['title']},{i['id']}")
+                elif 'lang' in i:
+                    final.append(f"{i['lang']},{i['id']}")
+                elif 'external-filename' in i:
+                    final.append(f"{i['external-filename']},{i['id']}")
+        print(final)
+        return final
 
     def find_device(self, device):
         devices = self.player.audio_device_list

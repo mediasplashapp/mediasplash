@@ -23,8 +23,10 @@ def property_log(func):
 def subtitle_observer(name, value):
     if value and value.strip():
         value = value.splitlines()
+        print("Beginning line check.")
         for line in value:
             if line.strip():
+                print(line)
                 tolk.speak(line)
 
 def register_observers(player):

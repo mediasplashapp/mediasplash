@@ -75,6 +75,7 @@ class Main(wx.Frame):
             wx.EVT_MENU, lambda event: self.mpanel.delay_set(), self.subDelay
         )
         self.Bind(wx.EVT_MENU, lambda event: self.Close(), self.exit_item)
+        self.Bind(wx.EVT_MENU, lambda event: self.mpanel.media.select_sub(), self.subtitleSelectMenu)
         self.Bind(wx.EVT_MENU, self.on_jump, self.jumpItem)
         self.audio_tracks_menu.Bind(wx.EVT_MENU, self.audio_track_set)
         self.audio_devices_menu.Bind(wx.EVT_MENU, self.audio_device_set)
@@ -129,7 +130,7 @@ class Main(wx.Frame):
         result = self.audio_tracks_menu.GetChecked().GetItemLabelText()
         tracks = utils.generate_track_info(self.mpanel.media.player.track_list, "audio")
         for (val, i) in enumerate(tracks):
-            if i == result:
+            if i[1] == result:
                 self.mpanel.media.player.aid = val + 1
 
     def load(self):

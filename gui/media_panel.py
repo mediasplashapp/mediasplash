@@ -30,12 +30,12 @@ class MediaPanel(wx.Panel):
         self.media = Media(self)
 
     def delay_set(self):
-        with SubDelay(self.frame, self.media.player.sub_delay) as dlg:
+        with SubDelay(self.frame, int(self.media.player.sub_delay * 1000)) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 if not dlg.intctrl.GetValue():
                     self.media.player.sub_delay = 0
                 else:
-                    self.media.player.sub_delay = dlg.intctrl.GetValue()
+                    self.media.player.sub_delay = dlg.intctrl.GetValue() / 1000
 
     def audio_devices_set(self):
         devices = self.media.player.audio_device_list
@@ -47,7 +47,7 @@ class MediaPanel(wx.Panel):
     def audio_tracks_set(self):
         self.frame.audio_tracks_menu.Clear()
         audio_tracks = utils.generate_track_info(self.media.player.track_list, "audio")
-        for i in audio_tracks:
+        for (j, i) in audio_tracks:
             self.frame.audio_tracks_menu.Append(
                 wx.ID_ANY, i, kind=wx.ITEM_RADIO
             )

@@ -29,9 +29,9 @@ def generate_track_info(origin, type):
         if not "type" in i: continue
         if i['type'] == type:
             if not "title" in i or i['title'] == '':
-                final.append(i['lang'])
+                final.append((i['id'], i['lang']))
             else:
-                final.append(i['title'])
+                final.append((i['id'], i['title']))
     return final
 
 
