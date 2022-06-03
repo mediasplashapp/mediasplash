@@ -25,6 +25,7 @@ def clean(text):
 class ObserverManager:
     def __init__(self, player):
         self.player = player
+        self.player.sub_filter_regex_plain = True
         self.prev_value = ""
 
     def subtitle_observer(self, name, value):
@@ -42,6 +43,8 @@ class ObserverManager:
             tolk.speak(value[0])
             self.prev_value = value
             return
+        tolk.speak(value[-1]
+        return
         for line in difflib.ndiff(self.prev_value, value):
             if line.startswith("+ ") and line[2:].strip():
                 logging.debug(f"new line {line}")
