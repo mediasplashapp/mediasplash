@@ -116,5 +116,5 @@ class Media:
             self.state = utils.MediaState.paused
 
     def onStop(self):
-        self.panel.subtitles.queue_reset()
+        self.panel.subtitles.reset()
         self.player.stop()

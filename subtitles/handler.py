@@ -34,8 +34,6 @@ class SubHandler:
         # The delaying period for speaking subtitles(In milliseconds.)
         self.delay_by = 0
         self.index = 0
-        self.queue = []
-        self.queue_index = 0
         self.subtitle_handler = None
         # The list of subtitles, A dictionary with keys of value string, For the name, And values for the
         # value tuple (Default, subtitle_path)
@@ -64,7 +62,7 @@ class SubHandler:
         )
         current = timedelta(seconds = self.panel.media.player.time_pos)
         if current >= start and current <= end:
-            self.queue.append(self.subtitle_handler[self.index].plaintext)
+            self.speak_sub(self.subtitle_handler[self.index].plaintext)
             self.processed_events.append(
                 utils.get_subtitle_tuple(self.subtitle_handler[self.index])
             )
@@ -80,20 +78,16 @@ class SubHandler:
             end = timedelta(milliseconds=i.end + self.delay_by)
             current = timedelta(seconds = self.panel.media.player.time_pos)
             if current >= start and current <= end:
-                self.queue.append(i.plaintext)
+                self.speak_sub(i.plaintext)
                 self.processed_events.append(utils.get_subtitle_tuple(i))
                 self.index = val
                 break
 
-    def on_queue(self):
-        if len(self.queue) == 0 or self.queue_index > len(self.queue) - 1:
-            return
-        text = self.queue[self.queue_index].replace(r"\N", "\n")
+    def speak_sub(self, text):
+        text = text.replace(r"\N", "\n")
         if text == "":
-            self.queue.remove(self.queue[self.queue_index])
             return
         speak(text)
-        self.queue.remove(self.queue[self.queue_index])
 
     def stringify_subtitles(self):
         final_list = []
@@ -105,7 +99,7 @@ class SubHandler:
         self.subtitle_handler = None
         self.subtitles.clear()
         self.subtitle = ""
-        self.queue_reset()
+        self.reset()
         if self.temp_dir:
             self.temp_dir.cleanup()
             self.temp_dir = None
@@ -172,15 +166,13 @@ class SubHandler:
                     self.panel.media.player.sub = val + 1
             self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
 
-    def queue_reset(self):
+    def reset(self):
         if (
             not self.subtitle_handler
             or len(self.subtitles) == 0
             or len(self.subtitle_handler) == 0
         ):
             return
-        self.queue.clear()
-        self.queue_index = 0
         self.index = 0
         self.processed_events.clear()
         for (val, i) in enumerate(self.subtitle_handler):
@@ -188,7 +180,7 @@ class SubHandler:
             end = timedelta(milliseconds=i.end + self.delay_by)
             current = timedelta(seconds = self.panel.media.player.time_pos)
             if current >= start and current <= end:
-                self.queue.append(i.plaintext)
+                self.speak_sub(i.plaintext)
                 self.processed_events.append(utils.get_subtitle_tuple(i))
                 self.index = val
 

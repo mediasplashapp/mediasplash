@@ -119,7 +119,7 @@ class Main(wx.Frame):
                 self.mpanel.media.player.set_position(
                     round(delta.total_seconds()) / self.mpanel.media.duration
                 )
-                self.mpanel.subtitles.queue_reset()
+                self.mpanel.subtitles.reset()
 
     def audio_device_set(self, event):
         result = self.audio_devices_menu.GetChecked().GetItemLabelText()
@@ -174,10 +174,10 @@ class Main(wx.Frame):
 
         if keycode == ord("."):
             self.mpanel.media.next_chapter()
-            self.mpanel.subtitles.queue_reset()
+            self.mpanel.subtitles.reset()
         if keycode == ord(","):
             self.mpanel.media.previous_chapter()
-            self.mpanel.subtitles.queue_reset()
+            self.mpanel.subtitles.reset()
 
         if keycode == wx.WXK_DOWN and self.mpanel.media.player.volume > 0:
             vol = self.mpanel.media.player.volume
@@ -195,7 +195,7 @@ class Main(wx.Frame):
             if controlDown:
                 val = 30
             self.mpanel.media.player.command("seek", val)
-            self.mpanel.subtitles.queue_reset()
+            self.mpanel.subtitles.reset()
 
         if keycode == wx.WXK_LEFT:
             val = 5
@@ -204,10 +204,10 @@ class Main(wx.Frame):
             if controlDown:
                 val = 30
             self.mpanel.media.player.command("seek", -val)
-            self.mpanel.subtitles.queue_reset()
+            self.mpanel.subtitles.reset()
         if keycode == wx.WXK_HOME:
             self.mpanel.media.player.time_pos = 0.0
-            self.mpanel.subtitles.queue_reset()
+            self.mpanel.subtitles.reset()
 
         if keycode == ord("P"):
             speak(

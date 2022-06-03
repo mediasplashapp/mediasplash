@@ -30,15 +30,11 @@ class MediaPanel(wx.Panel):
         self.media = Media(self)
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onTimer, self.timer)
-        self.queue_timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.onQueueTimer, self.queue_timer)
         self.subtitles = subtitles.handler.SubHandler(self)
 
     def onTimer(self, event):
         self.subtitles.update()
 
-    def onQueueTimer(self, event):
-        self.subtitles.on_queue()
 
     def audio_devices_set(self):
         devices = self.media.player.audio_device_list
@@ -64,5 +60,4 @@ class MediaPanel(wx.Panel):
         self.media.load(dir, file)
         self.subtitles.load(dir, file)
         self.audio_tracks_set()
-        self.timer.Start(50)
-        self.queue_timer.Start(50)
+        self.timer.Start(10)
