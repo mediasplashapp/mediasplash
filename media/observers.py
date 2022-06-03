@@ -7,27 +7,20 @@
 # See the file LICENSE for more details.
 
 
-from functools import wraps
 from cytolk import tolk
 import logging
 
 
-def property_log(func):
-    @wraps(func)
-    def logged_property(name, value):
-        logging.debug(f"Observed property {name} with data {value}")
-        return func(name, value)
-    return logged_property
+class ObserverManager:
+    def __init__(self, player):
+        self.player = player
 
-@property_log
-def subtitle_observer(name, value):
-    if value and value.strip():
-        value = value.splitlines()
-        print("Beginning line check.")
-        for line in value:
-            if line.strip():
-                print(line)
+    def subtitle_observer(self, name, value):
+        logging.debug(f"property {name} with data {value}")
+        if value and not value.isspace():
+            value = [v for v in value.splitlines() if not v.isspace()]
+            for line in value:
                 tolk.speak(line)
 
-def register_observers(player):
-    player.observe_property("sub-text", subtitle_observer)
+    def register_observers(self):
+        self.player.observe_property("sub-text", self.subtitle_observer)

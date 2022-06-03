@@ -47,8 +47,8 @@ class Media:
         self.file = ""
         self.state = utils.MediaState.neverPlayed
         self.player: mpv.MPV = mpv.MPV(wid = self.panel.GetHandle(), sub_fix_timing = True)
-        observers.register_observers(self.player)
-
+        observer = observers.ObserverManager(self.player)
+        observer.register_observers()
 
     def load(self, dir, file):
         self.dir = dir
