@@ -17,10 +17,15 @@ class ObserverManager:
 
     def subtitle_observer(self, name, value):
         logging.debug(f"property {name} with data {value}")
-        if value and not value.isspace():
-            value = [v for v in value.splitlines() if not v.isspace()]
+        if value:
+            value = value.splitlines()
+            current_string = ""
             for line in value:
-                tolk.speak(line)
+                current_string += line
+                if line.endswith(" "):
+                    continue
+                tolk.speak(current_string)
+                current_string = ""
 
     def register_observers(self):
         self.player.observe_property("sub-text", self.subtitle_observer)
