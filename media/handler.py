@@ -49,8 +49,6 @@ class Media:
     def load(self, dir, file):
         self.dir = dir
         self.file = file
-        self.panel.frame.save()
-        self.panel.frame.load()
         self.player.play(os.path.join(dir, file))
         if hasattr(self.__dict__, "length"):
             del self.__dict__["length"]
