@@ -67,8 +67,14 @@ class Media:
         self.state = utils.MediaState.neverPlayed
         self.player: mpv.MPV = mpv.MPV(
             wid=self.panel.GetHandle(),
-            hwdec="auto-copy",
+            hwdec="d3d11va-copy",
+            profile="libmpv",
+            cache=True,
+            demuxer_max_bytes="300MiB",
+            demuxer_readahead_secs=30,
+            load_scripts=False,
             log_handler=log_handler,
+            loglevel="debug",
         )
 
     def load(self, dir, file):
