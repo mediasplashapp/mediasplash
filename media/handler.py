@@ -52,7 +52,6 @@ class Media:
         self.panel.frame.save()
         self.panel.frame.load()
         self.player.play(os.path.join(dir, file))
-        self.player.wait_until_playing(3.0)
         if hasattr(self.__dict__, "length"):
             del self.__dict__["length"]
 
