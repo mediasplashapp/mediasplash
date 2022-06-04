@@ -17,12 +17,33 @@
 """
 
 import os
+import logging
 
 os.add_dll_directory(os.getcwd())
 
 import mpv
 from misc import utils
 from functools import cached_property
+
+
+def log_handler(level, prefix, message):
+    message = message.strip()
+    prefix = prefix.strip()
+    if not message or not prefix:
+        return
+    message = f"{prefix} {message}"
+    if level == "fatal" or level == "error":
+        level = 40
+    elif level == "warn":
+        level = 30
+    elif level == "info":
+        level = 20
+    elif level == "v" or level == "trace" or level == "debug":
+        level = 10
+    else:
+        logging.debug(f"{level} {message}")
+        return
+    logging.log(level, message)
 
 
 supported_media = (
@@ -44,7 +65,11 @@ class Media:
         self.dir = ""
         self.file = ""
         self.state = utils.MediaState.neverPlayed
-        self.player: mpv.MPV = mpv.MPV(wid=self.panel.GetHandle(), hwdec = "auto-copy")
+        self.player: mpv.MPV = mpv.MPV(
+            wid=self.panel.GetHandle(),
+            hwdec="auto-copy",
+            log_handler=log_handler,
+        )
 
     def load(self, dir, file):
         self.dir = dir
