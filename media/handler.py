@@ -23,7 +23,9 @@ os.add_dll_directory(os.getcwd())
 import mpv
 from misc import utils
 from functools import cached_property
-
+import concurrent.futures
+from gui import messageBox
+import wx
 
 supported_media = (
     ".mp3",
@@ -50,6 +52,15 @@ class Media:
         self.dir = dir
         self.file = file
         self.player.play(os.path.join(dir, file))
+        try:
+            self.player.wait_until_playing(5.0)
+        except concurrent.futures._base.TimeoutError:
+            messageBox(
+                self.panel,
+                "The media loading have timed out, Please make sure that this media file is valid and try again.",
+                "Error",
+                wx.ICON_ERROR,
+            )
         if hasattr(self.__dict__, "length"):
             del self.__dict__["length"]
 

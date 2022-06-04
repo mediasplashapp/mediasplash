@@ -17,6 +17,7 @@
 """
 
 import pysubs2
+from gui import messageBox
 from . import reader
 import tempfile
 import logging
@@ -144,14 +145,16 @@ class SubHandler:
                 return
             sub = dlg.subtitle_select.GetString(dlg.subtitle_select.Selection)
             if not sub:
-                wx.MessageBox(
+                messageBox(
+                    self.panel,
                     "Aborting...",
                     "No subtitle selected",
                     wx.ICON_ERROR,
                 )
                 return
             if sub not in self.subtitles:
-                wx.MessageBox(
+                messageBox(
+                    self.panel,
                     "There was an error while trying to parse the selected subtitle... Please try again later.",
                     "Fatal error",
                     wx.ICON_ERROR,
@@ -192,7 +195,8 @@ class SubHandler:
             self.panel.media.player.sub_add(os.path.join(dir, file))
         except Exception:
             logging.error("Could not load subtitles", exc_info=True)
-            wx.MessageBox(
+            messageBox(
+                self.panel,
                 "That file couldn't be loaded. Make sure it's a supported format and try again.",
                 "File couldn't be loaded",
                 wx.ICON_ERROR,
