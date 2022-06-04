@@ -17,6 +17,7 @@
 """
 
 import os
+import logging
 
 os.add_dll_directory(os.getcwd())
 
@@ -26,6 +27,26 @@ from functools import cached_property
 import concurrent.futures
 from gui import messageBox
 import wx
+
+def log_handler(level, prefix, message):
+    message = message.strip()
+    prefix = prefix.strip()
+    if not message or not prefix:
+        return
+    message = f"{prefix} {message}"
+    if level == "fatal" or level == "error":
+        level = 40
+    elif level == "warn":
+        level = 30
+    elif level == "info":
+        level = 20
+    elif level == "v" or level == "trace" or level == "debug":
+        level = 10
+    else:
+        logging.debug(f"{level} {message}")
+        return
+    logging.log(level, message)
+
 
 supported_media = (
     ".mp3",
@@ -46,7 +67,17 @@ class Media:
         self.dir = ""
         self.file = ""
         self.state = utils.MediaState.neverPlayed
-        self.player: mpv.MPV = mpv.MPV(wid=self.panel.GetHandle(), hwdec = "auto-copy")
+        self.player: mpv.MPV = mpv.MPV(
+            wid=self.panel.GetHandle(),
+            hwdec="d3d11va-copy",
+            profile="libmpv",
+            cache=True,
+            demuxer_max_bytes="300MiB",
+            demuxer_readahead_secs=30,
+            load_scripts=False,
+            log_handler=log_handler,
+            loglevel="debug",
+        )
 
     def load(self, dir, file):
         self.dir = dir
