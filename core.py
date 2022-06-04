@@ -19,7 +19,6 @@
 import sys
 import os
 import math
-from math import fmod
 from data_manager import DataManager as dm
 from gui import dialogs, messageBox
 from globals import info

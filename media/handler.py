@@ -44,13 +44,12 @@ class Media:
         self.dir = ""
         self.file = ""
         self.state = utils.MediaState.neverPlayed
-        self.player: mpv.MPV = mpv.MPV(wid=self.panel.GetHandle())
+        self.player: mpv.MPV = mpv.MPV(wid=self.panel.GetHandle(), hwdec = "auto-copy")
 
     def load(self, dir, file):
         self.dir = dir
         self.file = file
         self.panel.frame.save()
-        self.player = mpv.MPV(wid=self.panel.GetHandle())
         self.panel.frame.load()
         self.player.play(os.path.join(dir, file))
         self.player.wait_until_playing(3.0)
