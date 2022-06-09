@@ -76,7 +76,7 @@ class Media:
             demuxer_readahead_secs=30,
             load_scripts=False,
             log_handler=log_handler,
-            loglevel="debug",
+            loglevel="info",
         )
 
     def load(self, dir, file):

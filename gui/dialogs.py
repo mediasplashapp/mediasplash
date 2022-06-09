@@ -25,18 +25,28 @@ from globals import info
 class SubtitleSelect(wx.Dialog):
     def __init__(self, handle):
         super().__init__(handle.panel.frame, title="Select a subtitle")
+        self.handle = handle
         box = wx.BoxSizer()
         gbox_sizer = wx.StaticBoxSizer(wx.VERTICAL, self, "Subtitles")
         gbox = gbox_sizer.GetStaticBox()
         gbox_sizer.Add(wx.StaticText(gbox, label="Subtitles:"))
         subtitles = handle.stringify_subtitles()
         self.subtitle_select = wx.Choice(gbox, choices=subtitles)
+        self.listbox = wx.ListBox(self, name = "Subtitle info")
         gbox_sizer.Add(self.subtitle_select)
+        gbox_sizer.Add(self.listbox)
         box.Add(gbox_sizer)
         box.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL))
         self.SetSizer(box)
+        self.Bind(wx.EVT_CHOICE, self.process_sub_selection)
         self.subtitle_select.SetFocus()
 
+    def process_sub_selection(self, event):
+        self.listbox.Clear()
+        sel = self.subtitle_select.GetSelection()
+        if sel == wx.NOT_FOUND:
+            return
+        self.listbox.InsertItems(self.handle.subtitles[sel].stringify(), 0)
 
 class SubDelay(wx.Dialog):
     def __init__(self, handle, title, value):

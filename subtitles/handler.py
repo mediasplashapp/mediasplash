@@ -19,6 +19,7 @@
 import pysubs2
 from gui import messageBox
 from . import reader
+from . import classes
 import tempfile
 import logging
 from misc import utils
@@ -93,7 +94,7 @@ class SubHandler:
     def stringify_subtitles(self):
         final_list = []
         for i in self.subtitles:
-            final_list.append(i)
+            final_list.append((i.title if i.title else i.language))
         return final_list
 
     def destroy(self):
@@ -110,18 +111,16 @@ class SubHandler:
         self.subtitles = reader.generate_subtitles(
             os.path.join(dir, file), self.temp_dir
         )
-        for (i, j) in self.subtitles.values():
-            if i == 1:
-                self.subtitle = j
+        for i in self.subtitles:
+            if i.default == 1:
+                self.subtitle = i.path
                 break
         if len(self.subtitles) > 0 and self.subtitle == "":
-            for (i, val) in self.subtitles.values():
-                self.subtitle = val
-                break
+            self.subtitle = self.subtitles[0].path
         external_subs = utils.check_for_similar_subtitles(dir, file)
         if len(external_subs) > 0:
-            self.subtitles.update(external_subs)
-            self.subtitle = next(iter(external_subs.items()))[1][1]
+            self.subtitles.extend(external_subs)
+            self.subtitle = self.subtitles[0].path
         if self.subtitles:
             self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
 
@@ -152,21 +151,17 @@ class SubHandler:
                     wx.ICON_ERROR,
                 )
                 return
-            if sub not in self.subtitles:
-                messageBox(
-                    self.panel,
-                    "There was an error while trying to parse the selected subtitle... Please try again later.",
-                    "Fatal error",
-                    wx.ICON_ERROR,
-                )
-                return
-            self.subtitle = self.subtitles[sub][1]
+            for i in self.subtitles:
+                if i.title and i.title == sub or i.language and i.language == sub:
+                    self.subtitle = i.path
+                    break
             subs = utils.generate_track_info(
                 self.panel.media.player.track_list, "subtitle"
             )
             for (val, i) in enumerate(subs):
                 if i == sub:
                     self.panel.media.player.sub = val + 1
+                    break
             self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
 
     def reset(self):
@@ -202,4 +197,4 @@ class SubHandler:
                 wx.ICON_ERROR,
             )
             return
-        self.subtitles[file] = (0, os.path.join(dir, file))
+        self.subtitles.append(classes.Subtitle(title = file, external = True, path = os.path.join(dir, file)))

@@ -21,6 +21,7 @@ import subprocess
 import os
 import uuid
 import logging
+from . import classes
 
 
 def generate_subtitles(filename, temp_dir):
@@ -29,21 +30,21 @@ def generate_subtitles(filename, temp_dir):
     )
     logging.debug(info)
     data = {}
+    final = []
     try:
         data = json.loads(info)
     except json.decoder.JSONDecodeError:
-        return data
-    final = {}
+        return final
     if "streams" not in data:
         return final
     for i in data["streams"]:
         if "codec_name" in i and "index" in i and i["codec_type"] == "subtitle":
-
+            title = ""
+            language = ""
             if "title" in i["tags"]:
-                subtitle_name = f"{i['tags']['title']}.ass"
-            else:
-                subtitle_name = f"{i['tags']['language']}.ass"
-
+                title = f"{i['tags']['title']}"
+            if "language" in i['tags']:
+                language = f"{i['tags']['language']}"
             subtitle_file = f"{uuid.uuid4().hex}.ass"
             res = subprocess.getoutput(
                 [
@@ -56,8 +57,5 @@ def generate_subtitles(filename, temp_dir):
                 ]
             )
             logging.debug(res)
-            final[subtitle_name.replace(".ass", "")] = (
-                i["disposition"]["default"],
-                f"{os.path.join(temp_dir.name, subtitle_file)}",
-            )
+            final.append(classes.Subtitle(title = title, language = language, path = os.path.join(temp_dir.name, subtitle_file), default = i["disposition"]["default"]))
     return final
