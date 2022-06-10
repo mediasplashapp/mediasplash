@@ -46,6 +46,7 @@ class Main(wx.Frame):
         self.fileMenu = wx.Menu()
         self.Centre()
         self.fileOpen = self.fileMenu.Append(wx.ID_OPEN)
+        self.fileStream = self.fileMenu.Append(wx.ID_ANY, "Open from URL...\tAlt+u")
         self.subtitleOpen = self.fileMenu.Append(wx.ID_ANY, "Open subtitle...\tAlt+O")
         self.exit_item = self.fileMenu.Append(wx.ID_EXIT, "Quit\tCtrl+Q")
         self.menubar.Append(self.fileMenu, "&file")
@@ -68,6 +69,7 @@ class Main(wx.Frame):
         self.menubar.Append(self.helpMenu, "&Help")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
+        self.Bind(wx.EVT_MENU, self.onLoadUrl, self.fileStream)
         self.Bind(wx.EVT_MENU, self.about, self.fileAbout)
         self.Bind(wx.EVT_MENU, self.onUpdateCheck, self.updateCheck)
         self.Bind(
@@ -223,8 +225,10 @@ class Main(wx.Frame):
             self.mpanel.subtitles.reset()
 
         if keycode == ord("P"):
+            time_pos = (self.mpanel.media.player.time_pos if self.mpanel.media.player.time_pos else 0)
+            length = (self.mpanel.media.length if self.mpanel.media.length else 0)
             speak(
-                f"Current position, {str(timedelta(seconds = round(self.mpanel.media.player.time_pos)))} elapsed of {str(timedelta(seconds = round(self.mpanel.media.length)))}"
+                f"Current position, {str(timedelta(seconds = round(time_pos)))} elapsed of {str(timedelta(seconds = round(length)))}"
             )
         if keycode == wx.WXK_SPACE:
             if self.mpanel.media.state == utils.MediaState.paused:
@@ -233,6 +237,13 @@ class Main(wx.Frame):
                 self.mpanel.media.onPause()
         else:
             event.Skip()
+
+    def onLoadUrl(self, event):
+        with wx.TextEntryDialog(self, "Enter URL") as dlg:
+            r = dlg.ShowModal()
+            if r != wx.ID_OK:
+                return
+            self.mpanel.media.load("", dlg.GetValue(), True)
 
     def onLoadFile(self, evt):
         with wx.FileDialog(self, "Select a media file") as dlg:

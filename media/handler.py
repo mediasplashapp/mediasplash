@@ -66,6 +66,7 @@ class Media:
         self.panel = parent
         self.dir = ""
         self.file = ""
+        self.is_url = False
         self.state = utils.MediaState.neverPlayed
         self.player: mpv.MPV = mpv.MPV(
             wid=self.panel.GetHandle(),
@@ -77,14 +78,19 @@ class Media:
             load_scripts=False,
             log_handler=log_handler,
             loglevel="info",
+            ytdl = True,
         )
 
-    def load(self, dir, file):
+    def load(self, dir, file, url = False):
         self.dir = dir
         self.file = file
-        self.player.play(os.path.join(dir, file))
+        self.is_url = url
+        if url:
+            self.player.play(file)
+        else:
+            self.player.play(os.path.join(dir, file))
         try:
-            self.player.wait_until_playing(5.0)
+            self.player.wait_until_playing(10.0)
         except concurrent.futures._base.TimeoutError:
             messageBox(
                 self.panel,
