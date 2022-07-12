@@ -38,12 +38,12 @@ def generate_track_info(origin, type):
 
 
 def check_for_similar_subtitles(dir, file):
-    p = Path(os.path.join(dir, file))
+    files = os.listdir(dir)
     final = {}
-    filename = p.stem
-    for i in supported_subtitles:
-        if p.with_suffix(i).exists():
-            final[filename] = (0, f"{os.path.join(dir, filename)}{i}")
+    for i in files:
+        for j in supported_subtitles:
+            if i.endswith(j):
+                final[filename] = (0, f"{os.path.join(dir, i)}")
     return final
 
 

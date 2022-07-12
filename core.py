@@ -130,8 +130,8 @@ class Main(wx.Frame):
                     )
                 if not delta or delta.total_seconds() > self.mpanel.media.length:
                     messageBox(self, "input is not valid", "Error", wx.ICON_ERROR)
-                self.mpanel.media.player.set_position(
-                    round(delta.total_seconds()) / self.mpanel.media.duration
+                self.mpanel.media.player.time_pos(
+                    round(delta.total_seconds()) / self.mpanel.media.length
                 )
                 self.mpanel.subtitles.reset()
 

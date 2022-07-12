@@ -90,7 +90,7 @@ class Media:
         else:
             self.player.play(os.path.join(dir, file))
         try:
-            self.player.wait_until_playing(10.0)
+            self.player.wait_until_playing(30.0)
         except concurrent.futures._base.TimeoutError:
             messageBox(
                 self.panel,
@@ -98,6 +98,8 @@ class Media:
                 "Error",
                 wx.ICON_ERROR,
             )
+        if self.player.pause:
+            self.player.pause = False
         if hasattr(self.__dict__, "length"):
             del self.__dict__["length"]
 
@@ -129,7 +131,7 @@ class Media:
             return
         file_index = files.index(self.file)
         for i in files[file_index:]:
-            if not i == self.file and os.path.splitext(i)[1] in supported_media:
+            if not i == self.file and os.path.splitext(i)[-1] in supported_media:
                 self.panel.doLoadFile(i, self.dir)
                 break
 
@@ -141,9 +143,10 @@ class Media:
             return
         file_index = files.index(self.file)
         for i in reversed(files[:file_index]):
-            if not i == self.file and os.path.splitext(i)[1] in supported_media:
+            if not i == self.file and os.path.splitext(i)[-1] in supported_media:
                 self.panel.doLoadFile(i, self.dir)
                 break
+
 
     def onPlay(self):
         self.player.pause = False
