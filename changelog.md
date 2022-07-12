@@ -4,10 +4,9 @@
 - Moves to the mpv library for media handling instead of vlc, This also removes the requirement of having an external program installed with this.
 ### Fixes
 - Fixed changing subtitles wouldn't change it visually.
-Fixes Auto subtitle loading would not load some subtitles if they had 2 or more extensions.
+- Fixes Auto subtitle loading would not load some subtitles if they had 2 or more extensions.
 ### Features
 - You can now select audio devices, They save at program exit.
-Quitting the program when having a media file active would reload it back when opened again
 
 ## Version 1.1.0:
 ### features
