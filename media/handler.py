@@ -19,8 +19,6 @@
 import os
 import logging
 
-os.add_dll_directory(os.path.join(os.getcwd(), "libs"))
-
 import mpv
 from misc import utils
 from functools import cached_property

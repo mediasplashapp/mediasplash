@@ -19,7 +19,7 @@
 import os
 from pathlib import Path
 from enum import Enum
-
+from subtitles import classes
 
 supported_subtitles = (".ass", ".ssa", ".srt")
 
@@ -39,11 +39,11 @@ def generate_track_info(origin, type):
 
 def check_for_similar_subtitles(dir, file):
     files = os.listdir(dir)
-    final = {}
+    final = []
     for i in files:
         for j in supported_subtitles:
             if i.endswith(j):
-                final[filename] = (0, f"{os.path.join(dir, i)}")
+                final.append(classes.Subtitle(default = False, path = f"{os.path.join(dir, i)}", title = i))
     return final
 
 

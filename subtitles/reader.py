@@ -18,15 +18,19 @@
 
 import json
 import subprocess
+import sys
 import os
 import uuid
 import logging
 from . import classes
 
+current_path = os.getcwd()
+if getattr(sys, 'frozen', False):
+    current_path = os.path.dirname(sys.executable)
 
 def generate_subtitles(filename, temp_dir):
     info = subprocess.getoutput(
-        f'ffprobe -v error  -show_entries stream -print_format json "{filename}"'
+        f'{current_path}/ffprobe -v error  -show_entries stream -print_format json "{filename}"'
     )
     logging.debug(info)
     data = {}
@@ -48,7 +52,7 @@ def generate_subtitles(filename, temp_dir):
             subtitle_file = f"{uuid.uuid4().hex}.ass"
             res = subprocess.getoutput(
                 [
-                    "ffmpeg",
+                    f"{current_path}/ffmpeg",
                     "-i",
                     filename,
                     "-map",

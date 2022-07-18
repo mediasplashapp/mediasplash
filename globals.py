@@ -23,7 +23,7 @@ import os
 @dataclass(frozen=True)
 class AppInfo:
     name: str = "MediaSplash"
-    version: tuple = (1, 2, 0)
+    version: tuple = (1, 2, 1)
     data_path: str = os.path.join(os.path.expandvars("%appdata%"), "mediasplash")
 
 
