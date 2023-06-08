@@ -26,7 +26,7 @@ from misc import utils
 import os
 import wx
 from gui import dialogs
-from cytolk.tolk import speak
+from speech import speak
 from datetime import timedelta
 
 

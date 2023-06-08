@@ -30,8 +30,7 @@ from gui import custom_controls
 import platform
 import traceback
 import wx
-from cytolk import tolk
-from cytolk.tolk import speak
+from speech import speak, speech_terminate
 
 from gui.media_panel import MediaPanel
 
@@ -50,7 +49,7 @@ class Main(wx.Frame):
         self.subtitleOpen = self.fileMenu.Append(wx.ID_ANY, "Open subtitle...\tAlt+O")
         self.exit_item = self.fileMenu.Append(wx.ID_EXIT, "Quit\tCtrl+Q")
         self.menubar.Append(self.fileMenu, "&file")
-        #self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
+        self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
         self.mediaMenu = wx.Menu()
         self.subtitleSelectMenu = self.mediaMenu.Append(
             wx.ID_ANY, "Change subtitle.\tAlt+C"
@@ -156,8 +155,10 @@ class Main(wx.Frame):
             self.mpanel.media.player.volume = int(self.data.get("volume"))
         if self.data.exists("saved_track"):
             tup = self.data.get("saved_track")
-            self.mpanel.media.load(tup[0], tup[1])
-            self.mpanel.media.player.time_pos = tup[2]
+            if os.path.isfile(os.path.join(tup[0], tup[1])):
+                self.mpanel.media.load(tup[0], tup[1])
+                if tup[2]:
+                    self.mpanel.media.player.time_pos = tup[2]
 
         if self.data.exists("audio_device"):
             item = self.audio_devices_menu.GetByName(
@@ -171,11 +172,13 @@ class Main(wx.Frame):
         self.data.add("subtitle_delay", self.mpanel.subtitles.delay_by)
         self.data.add("volume", self.mpanel.media.player.volume)
         self.data.add("audio_device", self.mpanel.media.player.audio_device)
-        self.data.add("saved_track", (self.mpanel.media.dir, self.mpanel.media.file, self.mpanel.media.player.time_pos))
+        if os.path.isfile(os.path.join(self.mpanel.media.dir, self.mpanel.media.file)):
+            self.data.add("saved_track", (self.mpanel.media.dir, self.mpanel.media.file, self.mpanel.media.player.time_pos))
         self.data.save()
 
     def onClose(self, event):
         self.save()
+        speech_terminate()
         self.mpanel.subtitles.destroy()
         self.mpanel.media.onStop()
         self.mpanel.media.player.terminate()
@@ -190,9 +193,6 @@ class Main(wx.Frame):
             self.mpanel.media.previous_file()
         if keycode == wx.WXK_PAGEDOWN:
             self.mpanel.media.next_file()
-
-        if keycode == ord("T"):
-            self.onLoadFile(None)
 
         if keycode == ord("."):
             self.mpanel.media.next_chapter()
@@ -253,22 +253,10 @@ class Main(wx.Frame):
             self.mpanel.media.load("", dlg.GetValue(), True)
 
     def onLoadFile(self, evt):
-        file_picker = wx.FilePickerCtrl()
-        if file_picker.Create(self, message="Select a media file"):
-            print("Zifta")
-            file_picker.Show()
-            file_path = file_picker.GetPath()
-            self.mpanel.doLoadFile(os.path.basename(file_path), os.path.dirname(file_path))
-        file_picker.Destroy()
-
-    def onLoadFile2(self, evt):
-        print("Zifta")
         dlg = wx.FileDialog(self, "Select a media file")
-        print("Zifta2")
         if dlg.ShowModal() == wx.ID_OK:
             dir = dlg.GetDirectory()
             file = dlg.GetFilename()
-            print("Zifta3")
             self.mpanel.doLoadFile(file, dir)
             dlg.Destroy()
 
@@ -316,8 +304,7 @@ def main():
     logging.info(f"python version: {sys.version}")
     logging.info(f"wx version: {wx.version()}")
     logging.info(f"machine name: {platform.machine()}")
-    with tolk.tolk():
-        app = wx.App()
-        frame = Main(app)
-        frame.Show()
-        app.MainLoop()
+    app = wx.App()
+    frame = Main(app)
+    frame.Show()
+    app.MainLoop()
