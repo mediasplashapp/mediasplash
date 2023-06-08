@@ -52,7 +52,7 @@ def generate_subtitles(filename, temp_dir):
             subtitle_file = f"{uuid.uuid4().hex}.ass"
             res = subprocess.getoutput(
                 [
-                    f"{current_path}/ffmpeg",
+                    f'{current_path}/ffmpeg',
                     "-i",
                     filename,
                     "-map",

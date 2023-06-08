@@ -42,7 +42,7 @@ def check_for_similar_subtitles(dir, file):
     final = []
     for i in files:
         for j in supported_subtitles:
-            if i.endswith(j):
+            if os.path.splitext(i)[0] == os.path.splitext(file)[0] and i.endswith(j):
                 final.append(classes.Subtitle(default = False, path = f"{os.path.join(dir, i)}", title = i))
     return final
 

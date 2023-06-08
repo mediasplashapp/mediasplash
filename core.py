@@ -50,6 +50,7 @@ class Main(wx.Frame):
         self.subtitleOpen = self.fileMenu.Append(wx.ID_ANY, "Open subtitle...\tAlt+O")
         self.exit_item = self.fileMenu.Append(wx.ID_EXIT, "Quit\tCtrl+Q")
         self.menubar.Append(self.fileMenu, "&file")
+        #self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
         self.mediaMenu = wx.Menu()
         self.subtitleSelectMenu = self.mediaMenu.Append(
             wx.ID_ANY, "Change subtitle.\tAlt+C"
@@ -68,7 +69,6 @@ class Main(wx.Frame):
         self.fileAbout = self.helpMenu.Append(wx.ID_ABOUT)
         self.menubar.Append(self.helpMenu, "&Help")
         self.SetMenuBar(self.menubar)
-        self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
         self.Bind(wx.EVT_MENU, self.onLoadUrl, self.fileStream)
         self.Bind(wx.EVT_MENU, self.about, self.fileAbout)
         self.Bind(wx.EVT_MENU, self.onUpdateCheck, self.updateCheck)
@@ -130,9 +130,7 @@ class Main(wx.Frame):
                     )
                 if not delta or delta.total_seconds() > self.mpanel.media.length:
                     messageBox(self, "input is not valid", "Error", wx.ICON_ERROR)
-                self.mpanel.media.player.time_pos(
-                    round(delta.total_seconds()) / self.mpanel.media.length
-                )
+                self.mpanel.media.player.time_pos = round(delta.total_seconds()) / self.mpanel.media.length
                 self.mpanel.subtitles.reset()
 
     def audio_device_set(self, event):
@@ -156,6 +154,11 @@ class Main(wx.Frame):
             self.mpanel.media.player.sub_delay = int(self.data.get("subtitle_delay"))
         if self.data.exists("volume"):
             self.mpanel.media.player.volume = int(self.data.get("volume"))
+        if self.data.exists("saved_track"):
+            tup = self.data.get("saved_track")
+            self.mpanel.media.load(tup[0], tup[1])
+            self.mpanel.media.player.time_pos = tup[2]
+
         if self.data.exists("audio_device"):
             item = self.audio_devices_menu.GetByName(
                 self.mpanel.media.find_device(self.data.get("audio_device"))
@@ -168,6 +171,7 @@ class Main(wx.Frame):
         self.data.add("subtitle_delay", self.mpanel.subtitles.delay_by)
         self.data.add("volume", self.mpanel.media.player.volume)
         self.data.add("audio_device", self.mpanel.media.player.audio_device)
+        self.data.add("saved_track", (self.mpanel.media.dir, self.mpanel.media.file, self.mpanel.media.player.time_pos))
         self.data.save()
 
     def onClose(self, event):
@@ -187,6 +191,9 @@ class Main(wx.Frame):
         if keycode == wx.WXK_PAGEDOWN:
             self.mpanel.media.next_file()
 
+        if keycode == ord("T"):
+            self.onLoadFile(None)
+
         if keycode == ord("."):
             self.mpanel.media.next_chapter()
             self.mpanel.subtitles.reset()
@@ -198,7 +205,7 @@ class Main(wx.Frame):
             vol = self.mpanel.media.player.volume
             self.mpanel.media.player.volume = vol - 5
             speak(f"{math.floor(vol - 5)}%")
-        if keycode == wx.WXK_UP and self.mpanel.media.player.volume < 100:
+        if keycode == wx.WXK_UP and self.mpanel.media.player.volume < 200:
             vol = self.mpanel.media.player.volume
             self.mpanel.media.player.volume = vol + 5
             speak(f"{math.floor(vol + 5)}%")
@@ -246,11 +253,24 @@ class Main(wx.Frame):
             self.mpanel.media.load("", dlg.GetValue(), True)
 
     def onLoadFile(self, evt):
-        with wx.FileDialog(self, "Select a media file") as dlg:
-            if dlg.ShowModal() == wx.ID_OK:
-                dir = dlg.GetDirectory()
-                file = dlg.GetFilename()
-                self.mpanel.doLoadFile(file, dir)
+        file_picker = wx.FilePickerCtrl()
+        if file_picker.Create(self, message="Select a media file"):
+            print("Zifta")
+            file_picker.Show()
+            file_path = file_picker.GetPath()
+            self.mpanel.doLoadFile(os.path.basename(file_path), os.path.dirname(file_path))
+        file_picker.Destroy()
+
+    def onLoadFile2(self, evt):
+        print("Zifta")
+        dlg = wx.FileDialog(self, "Select a media file")
+        print("Zifta2")
+        if dlg.ShowModal() == wx.ID_OK:
+            dir = dlg.GetDirectory()
+            file = dlg.GetFilename()
+            print("Zifta3")
+            self.mpanel.doLoadFile(file, dir)
+            dlg.Destroy()
 
     def onLoadSubtitle(self, evt):
         with wx.FileDialog(

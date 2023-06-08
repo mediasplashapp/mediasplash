@@ -83,12 +83,15 @@ class Media:
         self.dir = dir
         self.file = file
         self.is_url = url
+        if self.player.pause:
+            self.player.pause = False
         if url:
             self.player.play(file)
         else:
             self.player.play(os.path.join(dir, file))
         try:
             self.player.wait_until_playing(30.0)
+            print()
         except concurrent.futures._base.TimeoutError:
             messageBox(
                 self.panel,
@@ -96,8 +99,6 @@ class Media:
                 "Error",
                 wx.ICON_ERROR,
             )
-        if self.player.pause:
-            self.player.pause = False
         if hasattr(self.__dict__, "length"):
             del self.__dict__["length"]
 
