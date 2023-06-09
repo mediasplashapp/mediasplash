@@ -163,7 +163,7 @@ class SubHandler:
                 self.processed_events.append(utils.get_subtitle_tuple(i))
                 self.index = val
 
-    def doLoadSubtitle(self, file, dir):
+    def doLoadSubtitle(self, dir, file):
         try:
             self.subtitle_handler = pysubs2.load(os.path.join(dir, file), encoding="utf-8")
             self.panel.media.player.sub_add(os.path.join(dir, file))

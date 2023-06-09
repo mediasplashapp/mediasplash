@@ -21,7 +21,7 @@ import os
 import math
 from data_manager import DataManager as dm
 from gui import dialogs, messageBox
-from globals import info
+from global_vars import info
 from datetime import timedelta
 import webbrowser
 import logging
@@ -37,7 +37,7 @@ from gui.media_panel import MediaPanel
 
 class Main(wx.Frame):
     def __init__(self, app):
-        super().__init__(None, title="mediasplash")
+        super().__init__(None, title=info.name)
         self.mpanel = MediaPanel(self)
         self.app = app
         self.mpanel.Bind(wx.EVT_KEY_DOWN, self.onKeyPress)
@@ -164,7 +164,7 @@ class Main(wx.Frame):
         if self.data.exists("saved_track"):
             tup = self.data.get("saved_track")
             if os.path.isfile(os.path.join(tup[0], tup[1])):
-                self.mpanel.media.load(tup[0], tup[1])
+                self.mpanel.doLoadFile(tup[0], tup[1])
                 if tup[2]:
                     self.mpanel.media.player.time_pos = tup[2]
 
@@ -270,8 +270,7 @@ class Main(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             dir = dlg.GetDirectory()
             file = dlg.GetFilename()
-            self.mpanel.doLoadFile(file, dir)
-            dlg.Destroy()
+            self.mpanel.doLoadFile(dir, file)
 
     def onLoadSubtitle(self, evt):
         with wx.FileDialog(
@@ -282,7 +281,7 @@ class Main(wx.Frame):
             if dlg.ShowModal() == wx.ID_OK:
                 dir = dlg.GetDirectory()
                 file = dlg.GetFilename()
-                self.mpanel.subtitles.doLoadSubtitle(file, dir)
+                self.mpanel.subtitles.doLoadSubtitle(dir, file)
 
 
 class LogRedirector:

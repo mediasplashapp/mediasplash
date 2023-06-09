@@ -1,4 +1,17 @@
 # MediaSplash changelog
+
+## version 1.3.0
+### features
+- Last-watched track and it's position are remembered automatically.
+- when a chapter starts, It will now be announced by the screen reader if available.
+- the window title is now updated with the currently playing chapter title as well as the title of the playing file.
+
+### changes:
+- Maximum volume is now 200%
+
+### fixes:
+- Jump to dialog now works correctly.
+
 ## Version 1.2.0
 ### Changes
 - Moves to the mpv library for media handling instead of vlc, This also removes the requirement of having an external program installed with this.

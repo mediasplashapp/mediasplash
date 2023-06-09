@@ -17,6 +17,7 @@
 """
 
 import os
+import logging
 from pathlib import Path
 from enum import Enum
 from subtitles import classes
@@ -38,6 +39,8 @@ def generate_track_info(origin, type):
 
 
 def check_for_similar_subtitles(dir, file):
+    logging.debug(dir)
+    logging.debug(file)
     files = os.listdir(dir)
     final = []
     for i in files:

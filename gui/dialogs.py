@@ -19,7 +19,7 @@
 import wx
 import wx.adv
 from wx.lib.intctrl import IntCtrl
-from globals import info
+from global_vars import info
 
 
 class SubtitleSelect(wx.Dialog):

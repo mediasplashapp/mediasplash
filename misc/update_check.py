@@ -8,7 +8,7 @@
 
 
 import requests
-from globals import info
+from global_vars import info
 
 
 URL = "https://api.github.com/repos/mediasplashapp/mediasplash/releases/latest"

@@ -6,20 +6,22 @@
 
 # See the file LICENSE for more details.
 
-
-import mpv
+import wx
+import global_vars
 from speech import speak
 import logging
 
 
 class ObserverManager:
-    def __init__(self, player: mpv.MPV):
-        self.player = player
+    def __init__(self, media):
+        self.media = media
 
     def chapter_observer(self, name, value):
-        metadata = self.player.chapter_metadata
-        if metadata and metadata.get("TITLE"):
-            speak(metadata.get("TITLE"), True)
+        metadata = self.media.player.chapter_metadata
+        title = metadata.get("TITLE") if metadata else None
+        if title:
+            speak(title, True)
+            wx.CallAfter(self.media.panel.frame.SetTitle, f"{title} - {self.media.title} - {global_vars.info.name}")
 
     def register_observers(self):
-        self.player.observe_property("chapter", self.chapter_observer)
+        self.media.player.observe_property("chapter", self.chapter_observer)

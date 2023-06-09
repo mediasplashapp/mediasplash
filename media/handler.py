@@ -81,7 +81,7 @@ class Media:
             ytdl=True,
         )
 
-        self.observer = observers.ObserverManager(self.player)
+        self.observer = observers.ObserverManager(self)
         self.observer.register_observers()
 
     def load(self, dir, file, url=False):
@@ -111,6 +111,10 @@ class Media:
     def length(self):
         return self.player.duration
 
+    @cached_property
+    def title(self):
+        return self.player.media_title
+
     def find_device(self, device):
         devices = self.player.audio_device_list
         for i in devices:
@@ -136,7 +140,7 @@ class Media:
         file_index = files.index(self.file)
         for i in files[file_index:]:
             if not i == self.file and os.path.splitext(i)[-1] in supported_media:
-                self.panel.doLoadFile(i, self.dir)
+                self.panel.doLoadFile(self.dir, i)
                 break
 
     def previous_file(self):
@@ -148,7 +152,7 @@ class Media:
         file_index = files.index(self.file)
         for i in reversed(files[:file_index]):
             if not i == self.file and os.path.splitext(i)[-1] in supported_media:
-                self.panel.doLoadFile(i, self.dir)
+                self.panel.doLoadFile(self.dir, i)
                 break
 
     def onPlay(self):

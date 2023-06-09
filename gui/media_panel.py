@@ -18,6 +18,7 @@
 
 import subtitles.handler
 import wx
+import global_vars
 from media.handler import Media
 from misc import utils
 
@@ -47,13 +48,13 @@ class MediaPanel(wx.Panel):
         for i in audio_tracks:
             self.frame.audio_tracks_menu.Append(wx.ID_ANY, i, kind=wx.ITEM_RADIO)
 
-    def doLoadFile(self, file, dir):
+    def doLoadFile(self, dir, file):
         self.media.onStop()
         self.timer.Stop()
         self.frame.audio_tracks_menu.Clear()
         self.subtitles.destroy()
-        self.frame.SetTitle(f"{file} mediasplash")
         self.media.load(dir, file)
         self.subtitles.load(dir, file)
         self.audio_tracks_set()
         self.timer.Start(10)
+        self.frame.SetTitle(f"{self.media.title} - {global_vars.info.name}")
