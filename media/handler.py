@@ -20,6 +20,7 @@ import os
 import logging
 
 import mpv
+from . import observers
 from misc import utils
 from functools import cached_property
 import concurrent.futures
@@ -78,6 +79,9 @@ class Media:
             loglevel="info",
             ytdl = True,
         )
+
+        self.observer = observers.ObserverManager(self.player)
+        self.observer.register_observers()
 
     def load(self, dir, file, url = False):
         self.dir = dir
