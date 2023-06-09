@@ -27,6 +27,7 @@ import concurrent.futures
 from gui import messageBox
 import wx
 
+
 def log_handler(level, prefix, message):
     message = message.strip()
     prefix = prefix.strip()
@@ -77,13 +78,13 @@ class Media:
             load_scripts=False,
             log_handler=log_handler,
             loglevel="info",
-            ytdl = True,
+            ytdl=True,
         )
 
         self.observer = observers.ObserverManager(self.player)
         self.observer.register_observers()
 
-    def load(self, dir, file, url = False):
+    def load(self, dir, file, url=False):
         self.dir = dir
         self.file = file
         self.is_url = url
@@ -149,7 +150,6 @@ class Media:
             if not i == self.file and os.path.splitext(i)[-1] in supported_media:
                 self.panel.doLoadFile(i, self.dir)
                 break
-
 
     def onPlay(self):
         self.player.pause = False

@@ -25,8 +25,9 @@ import logging
 from . import classes
 
 current_path = os.getcwd()
-if getattr(sys, 'frozen', False):
+if getattr(sys, "frozen", False):
     current_path = os.path.dirname(sys.executable)
+
 
 def generate_subtitles(filename, temp_dir):
     info = subprocess.getoutput(
@@ -47,12 +48,12 @@ def generate_subtitles(filename, temp_dir):
             language = ""
             if "title" in i["tags"]:
                 title = f"{i['tags']['title']}"
-            if "language" in i['tags']:
+            if "language" in i["tags"]:
                 language = f"{i['tags']['language']}"
             subtitle_file = f"{uuid.uuid4().hex}.ass"
             res = subprocess.getoutput(
                 [
-                    f'{current_path}/ffmpeg',
+                    f"{current_path}/ffmpeg",
                     "-i",
                     filename,
                     "-map",
@@ -61,5 +62,12 @@ def generate_subtitles(filename, temp_dir):
                 ]
             )
             logging.debug(res)
-            final.append(classes.Subtitle(title = title, language = language, path = os.path.join(temp_dir.name, subtitle_file), default = i["disposition"]["default"]))
+            final.append(
+                classes.Subtitle(
+                    title=title,
+                    language=language,
+                    path=os.path.join(temp_dir.name, subtitle_file),
+                    default=i["disposition"]["default"],
+                )
+            )
     return final

@@ -39,9 +39,7 @@ class MediaPanel(wx.Panel):
     def audio_devices_set(self):
         devices = self.media.player.audio_device_list
         for i in devices:
-            self.frame.audio_devices_menu.Append(
-                wx.ID_ANY, i["description"], kind=wx.ITEM_RADIO
-            )
+            self.frame.audio_devices_menu.Append(wx.ID_ANY, i["description"], kind=wx.ITEM_RADIO)
 
     def audio_tracks_set(self):
         self.frame.audio_tracks_menu.Clear()

@@ -50,30 +50,21 @@ class SubHandler:
     def update(self):
         if not self.subtitle_handler or self.index >= len(self.subtitle_handler) - 1:
             return
-        if (
-            utils.get_subtitle_tuple(self.subtitle_handler[self.index])
-            in self.processed_events
-        ):
+        if utils.get_subtitle_tuple(self.subtitle_handler[self.index]) in self.processed_events:
             self.check_for_subtitle()
             return
-        start = timedelta(
-            milliseconds=self.subtitle_handler.events[self.index].start + self.delay_by
-        )
-        end = timedelta(
-            milliseconds=self.subtitle_handler[self.index].end + self.delay_by
-        )
+        start = timedelta(milliseconds=self.subtitle_handler.events[self.index].start + self.delay_by)
+        end = timedelta(milliseconds=self.subtitle_handler[self.index].end + self.delay_by)
         current = timedelta(seconds=self.panel.media.player.time_pos)
         if current >= start and current <= end:
             self.speak_sub(self.subtitle_handler[self.index].plaintext)
-            self.processed_events.append(
-                utils.get_subtitle_tuple(self.subtitle_handler[self.index])
-            )
+            self.processed_events.append(utils.get_subtitle_tuple(self.subtitle_handler[self.index]))
             self.index += 1
             return
         self.check_for_subtitle()
 
     def check_for_subtitle(self):
-        for (val, i) in enumerate(self.subtitle_handler):
+        for val, i in enumerate(self.subtitle_handler):
             if utils.get_subtitle_tuple(i) in self.processed_events:
                 continue
             start = timedelta(milliseconds=i.start + self.delay_by)
@@ -108,9 +99,7 @@ class SubHandler:
 
     def load(self, dir, file):
         self.temp_dir = tempfile.TemporaryDirectory()
-        self.subtitles = reader.generate_subtitles(
-            os.path.join(dir, file), self.temp_dir
-        )
+        self.subtitles = reader.generate_subtitles(os.path.join(dir, file), self.temp_dir)
         for i in self.subtitles:
             if i.default == 1:
                 self.subtitle = i.path
@@ -125,9 +114,7 @@ class SubHandler:
             self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
 
     def delay_set(self):
-        with dialogs.SubDelay(
-            self, "Define subtitle delay(In milliseconds)", value=str(self.delay_by)
-        ) as dlg:
+        with dialogs.SubDelay(self, "Define subtitle delay(In milliseconds)", value=str(self.delay_by)) as dlg:
             r = dlg.ShowModal()
             if r == wx.ID_OK:
                 val = dlg.intctrl.GetValue()
@@ -155,25 +142,19 @@ class SubHandler:
                 if i.title and i.title == sub or i.language and i.language == sub:
                     self.subtitle = i.path
                     break
-            subs = utils.generate_track_info(
-                self.panel.media.player.track_list, "subtitle"
-            )
-            for (val, i) in enumerate(subs):
+            subs = utils.generate_track_info(self.panel.media.player.track_list, "subtitle")
+            for val, i in enumerate(subs):
                 if i == sub:
                     self.panel.media.player.sub = val + 1
                     break
             self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
 
     def reset(self):
-        if (
-            not self.subtitle_handler
-            or len(self.subtitles) == 0
-            or len(self.subtitle_handler) == 0
-        ):
+        if not self.subtitle_handler or len(self.subtitles) == 0 or len(self.subtitle_handler) == 0:
             return
         self.index = 0
         self.processed_events.clear()
-        for (val, i) in enumerate(self.subtitle_handler):
+        for val, i in enumerate(self.subtitle_handler):
             start = timedelta(milliseconds=i.start + self.delay_by)
             end = timedelta(milliseconds=i.end + self.delay_by)
             current = timedelta(seconds=self.panel.media.player.time_pos)
@@ -184,9 +165,7 @@ class SubHandler:
 
     def doLoadSubtitle(self, file, dir):
         try:
-            self.subtitle_handler = pysubs2.load(
-                os.path.join(dir, file), encoding="utf-8"
-            )
+            self.subtitle_handler = pysubs2.load(os.path.join(dir, file), encoding="utf-8")
             self.panel.media.player.sub_add(os.path.join(dir, file))
         except Exception:
             logging.error("Could not load subtitles", exc_info=True)
@@ -197,4 +176,4 @@ class SubHandler:
                 wx.ICON_ERROR,
             )
             return
-        self.subtitles.append(classes.Subtitle(title = file, external = True, path = os.path.join(dir, file)))
+        self.subtitles.append(classes.Subtitle(title=file, external=True, path=os.path.join(dir, file)))

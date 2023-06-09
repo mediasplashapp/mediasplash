@@ -51,12 +51,8 @@ class Main(wx.Frame):
         self.menubar.Append(self.fileMenu, "&file")
         self.Bind(wx.EVT_MENU, self.onLoadFile, self.fileOpen)
         self.mediaMenu = wx.Menu()
-        self.subtitleSelectMenu = self.mediaMenu.Append(
-            wx.ID_ANY, "Change subtitle.\tAlt+C"
-        )
-        self.subDelay = self.mediaMenu.Append(
-            wx.ID_ANY, "Change subtitle delay...\tAlt+D"
-        )
+        self.subtitleSelectMenu = self.mediaMenu.Append(wx.ID_ANY, "Change subtitle.\tAlt+C")
+        self.subDelay = self.mediaMenu.Append(wx.ID_ANY, "Change subtitle delay...\tAlt+D")
         self.jumpItem = self.mediaMenu.Append(wx.ID_ANY, "Jump to...\tctrl+J")
         self.audio_tracks_menu = custom_controls.ClearableMenu()
         self.mediaMenu.AppendSubMenu(self.audio_tracks_menu, "Audio tracks")
@@ -71,13 +67,9 @@ class Main(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onLoadUrl, self.fileStream)
         self.Bind(wx.EVT_MENU, self.about, self.fileAbout)
         self.Bind(wx.EVT_MENU, self.onUpdateCheck, self.updateCheck)
-        self.Bind(
-            wx.EVT_MENU, self.mpanel.subtitles.subtitle_select, self.subtitleSelectMenu
-        )
+        self.Bind(wx.EVT_MENU, self.mpanel.subtitles.subtitle_select, self.subtitleSelectMenu)
         self.Bind(wx.EVT_MENU, self.onLoadSubtitle, self.subtitleOpen)
-        self.Bind(
-            wx.EVT_MENU, lambda event: self.mpanel.subtitles.delay_set(), self.subDelay
-        )
+        self.Bind(wx.EVT_MENU, lambda event: self.mpanel.subtitles.delay_set(), self.subDelay)
         self.Bind(wx.EVT_MENU, lambda event: self.Close(), self.exit_item)
         self.Bind(wx.EVT_MENU, self.on_jump, self.jumpItem)
         self.audio_tracks_menu.Bind(wx.EVT_MENU, self.audio_track_set)
@@ -110,26 +102,42 @@ class Main(wx.Frame):
         messageBox(self, "No update found", "No updates", wx.ICON_WARNING)
 
     def on_jump(self, event):
-        with wx.TextEntryDialog(
-            self, "Type a position to quickly jump too, example, 5.30", "Go to"
-        ) as dlg:
+        with wx.TextEntryDialog(self, "Type a position to quickly jump too, example, 5.30", "Go to") as dlg:
             if dlg.ShowModal() == wx.ID_OK and dlg.GetValue().strip():
                 delta = None
+
+                def show_error():
+                    messageBox(self, "input is not valid", "Error", wx.ICON_ERROR)
+
                 value = dlg.GetValue().split(".")
+                if not value:
+                    value = dlg.GetValue().split(":")
                 value = [int(v) for v in value if v.isdigit()]
                 if not value:
+                    show_error()
                     return
                 if len(value) == 2:
                     delta = timedelta(minutes=value[0], seconds=value[1])
                 elif len(value) == 1:
-                    delta = timedelta(minutes=value[0])
+                    delta = timedelta(seconds=value[0])
                 elif len(value) == 3:
+                    delta = timedelta(hours=value[0], minutes=value[1], seconds=value[2])
+                elif len(value) == 4:
                     delta = timedelta(
-                        hours=value[0], minutes=value[1], seconds=value[2]
+                        days=value[0],
+                        hours=value[1],
+                        minutes=value[2],
+                        seconds=value[3],
                     )
-                if not delta or delta.total_seconds() > self.mpanel.media.length:
-                    messageBox(self, "input is not valid", "Error", wx.ICON_ERROR)
-                self.mpanel.media.player.time_pos = round(delta.total_seconds()) / self.mpanel.media.length
+
+                else:
+                    show_error()
+                    return
+                total = delta.total_seconds() if delta is not None else None
+                if total is None or total > self.mpanel.media.length or total < 0:
+                    show_error()
+                    return
+                self.mpanel.media.player.time_pos = total
                 self.mpanel.subtitles.reset()
 
     def audio_device_set(self, event):
@@ -142,7 +150,7 @@ class Main(wx.Frame):
     def audio_track_set(self, event):
         result = self.audio_tracks_menu.GetChecked().GetItemLabelText()
         tracks = utils.generate_track_info(self.mpanel.media.player.track_list, "audio")
-        for (val, i) in enumerate(tracks):
+        for val, i in enumerate(tracks):
             if i == result:
                 self.mpanel.media.player.aid = val + 1
 
@@ -161,9 +169,7 @@ class Main(wx.Frame):
                     self.mpanel.media.player.time_pos = tup[2]
 
         if self.data.exists("audio_device"):
-            item = self.audio_devices_menu.GetByName(
-                self.mpanel.media.find_device(self.data.get("audio_device"))
-            )
+            item = self.audio_devices_menu.GetByName(self.mpanel.media.find_device(self.data.get("audio_device")))
             if item:
                 item.Check(True)
                 self.mpanel.media.player.audio_device = self.data.get("audio_device")
@@ -173,7 +179,14 @@ class Main(wx.Frame):
         self.data.add("volume", self.mpanel.media.player.volume)
         self.data.add("audio_device", self.mpanel.media.player.audio_device)
         if os.path.isfile(os.path.join(self.mpanel.media.dir, self.mpanel.media.file)):
-            self.data.add("saved_track", (self.mpanel.media.dir, self.mpanel.media.file, self.mpanel.media.player.time_pos))
+            self.data.add(
+                "saved_track",
+                (
+                    self.mpanel.media.dir,
+                    self.mpanel.media.file,
+                    self.mpanel.media.player.time_pos,
+                ),
+            )
         self.data.save()
 
     def onClose(self, event):
@@ -232,8 +245,8 @@ class Main(wx.Frame):
             self.mpanel.subtitles.reset()
 
         if keycode == ord("P"):
-            time_pos = (self.mpanel.media.player.time_pos if self.mpanel.media.player.time_pos else 0)
-            length = (self.mpanel.media.length if self.mpanel.media.length else 0)
+            time_pos = self.mpanel.media.player.time_pos if self.mpanel.media.player.time_pos else 0
+            length = self.mpanel.media.length if self.mpanel.media.length else 0
             speak(
                 f"Current position, {str(timedelta(seconds = round(time_pos)))} elapsed of {str(timedelta(seconds = round(length)))}"
             )
@@ -293,9 +306,7 @@ def main():
     )
 
     def exchandler(type, exc, tb):
-        logging.error(
-            "".join([str(i) for i in traceback.format_exception(type, exc, tb)])
-        )
+        logging.error("".join([str(i) for i in traceback.format_exception(type, exc, tb)]))
 
     sys.excepthook = exchandler
     sys.stderr = LogRedirector(logging.warning)

@@ -8,8 +8,10 @@
 
 
 from cytolk import tolk
+
 global initialized
 initialized = False
+
 
 def speak(text: str, interrupt: bool = False):
     if not initialized:

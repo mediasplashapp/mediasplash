@@ -18,6 +18,9 @@ requests = "^2.31.0"
 black = "^23.3.0"
 Nuitka = "^1.6.2"
 
+[tool.black]
+line-length = 120
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

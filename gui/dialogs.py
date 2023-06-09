@@ -32,7 +32,7 @@ class SubtitleSelect(wx.Dialog):
         gbox_sizer.Add(wx.StaticText(gbox, label="Subtitles:"))
         subtitles = handle.stringify_subtitles()
         self.subtitle_select = wx.Choice(gbox, choices=subtitles)
-        self.listbox = wx.ListBox(self, name = "Subtitle info")
+        self.listbox = wx.ListBox(self, name="Subtitle info")
         gbox_sizer.Add(self.subtitle_select)
         gbox_sizer.Add(self.listbox)
         box.Add(gbox_sizer)
@@ -47,6 +47,7 @@ class SubtitleSelect(wx.Dialog):
         if sel == wx.NOT_FOUND:
             return
         self.listbox.InsertItems(self.handle.subtitles[sel].stringify(), 0)
+
 
 class SubDelay(wx.Dialog):
     def __init__(self, handle, title, value):
@@ -86,11 +87,7 @@ class AboutDialog(wx.Dialog):
                 url="https://github.com/mediasplashapp/mediasplash",
             )
         )
-        link_sizer.Add(
-            wx.adv.HyperlinkCtrl(
-                self, label="License", url="https://www.gnu.org/licenses/gpl-3.0.txt"
-            )
-        )
+        link_sizer.Add(wx.adv.HyperlinkCtrl(self, label="License", url="https://www.gnu.org/licenses/gpl-3.0.txt"))
         link_sizer.Add(
             wx.adv.HyperlinkCtrl(
                 self,
@@ -100,9 +97,7 @@ class AboutDialog(wx.Dialog):
         )
         sizer.Add(link_sizer, 0, wx.ALL, 5)
         sizer.Add(wx.Button(self, wx.ID_CLOSE))
-        self.Bind(
-            wx.EVT_BUTTON, lambda event: self.EndModal(wx.ID_CLOSE), id=wx.ID_CLOSE
-        )
+        self.Bind(wx.EVT_BUTTON, lambda event: self.EndModal(wx.ID_CLOSE), id=wx.ID_CLOSE)
         self.SetSizer(sizer)
         self.SetEscapeId(wx.ID_CLOSE)
         sizer.Fit(self)
