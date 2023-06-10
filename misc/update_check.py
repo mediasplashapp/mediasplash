@@ -23,5 +23,7 @@ def check():
             for i, j in zip(ver, info.version):
                 if i > j:
                     return [str(i) for i in ver]
+                elif i < j:
+                    return False
             return False
         res.raise_for_status()

@@ -19,5 +19,5 @@ import wx
 
 
 def messageBox(*args, **kwargs):
-    with wx.GenericMessageDialog(*args, **kwargs) as dlg:
+    with wx.MessageDialog(*args, **kwargs) as dlg:
         return dlg.ShowModal()

@@ -91,7 +91,7 @@ class Main(wx.Frame):
                     self,
                     f"A new update of {info.name} is available. New version: {'.'.join(updateData)}. Download the update now?",
                     "Update available",
-                    wx.YES_NO | wx.YES_DEFAULT,
+                    wx.YES_NO | wx.YES_DEFAULT | wx.ICON_WARNING,
                 )
                 == wx.ID_YES
             ):
