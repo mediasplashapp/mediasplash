@@ -17,6 +17,7 @@ requests = "^2.31.0"
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
 Nuitka = "^1.6.2"
+ruff = "^0.0.272"
 
 [tool.black]
 line-length = 120
