@@ -24,7 +24,8 @@ import os
 class AppInfo:
     name: str = "MediaSplash"
     version: tuple = (1, 3, 0)
-    data_path: str = os.path.join(os.path.expandvars("%appdata%"), "mediasplash")
+    data_path = "config"
+
 
 
 info = AppInfo()

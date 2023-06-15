@@ -19,6 +19,7 @@
 import json
 import subprocess
 import sys
+import platform
 import os
 import uuid
 import logging
@@ -28,10 +29,17 @@ current_path = os.getcwd()
 if getattr(sys, "frozen", False):
     current_path = os.path.dirname(sys.executable)
 
+ffprobe = f"{current_path}/ffprobe"
+if platform.system() == "Darwin":
+    ffprobe = "ffprobe"
+
+ffmpeg = f"{current_path}/ffmpeg"
+if platform.system() == "Darwin":
+    ffmpeg = "ffmpeg"
 
 def generate_subtitles(filename, temp_dir):
     info = subprocess.getoutput(
-        f'{current_path}/ffprobe -v error  -show_entries stream -print_format json "{filename}"'
+        f'{ffprobe} -v error  -show_entries stream -print_format json "{filename}"'
     )
     logging.debug(info)
     data = {}
@@ -51,16 +59,15 @@ def generate_subtitles(filename, temp_dir):
             if "language" in i["tags"]:
                 language = f"{i['tags']['language']}"
             subtitle_file = f"{uuid.uuid4().hex}.ass"
-            res = subprocess.getoutput(
-                [
-                    f"{current_path}/ffmpeg",
-                    "-i",
-                    filename,
-                    "-map",
-                    f"0:{i['index']}",
-                    f"{os.path.join(temp_dir.name, subtitle_file)}",
-                ]
-            )
+            command =                 [
+                ffmpeg,
+                "-i",
+                filename,
+                "-map",
+                f"0:{i['index']}",
+                        f"{os.path.join(temp_dir.name, subtitle_file)}"]
+            logging.debug(command)
+            res = subprocess.getoutput(command)
             logging.debug(res)
             final.append(
                 classes.Subtitle(

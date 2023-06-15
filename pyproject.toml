@@ -10,9 +10,10 @@ readme = "README.md"
 python = "^3.11"
 wxPython = "^4.2.1"
 pysubs2 = "^1.6.1"
-cytolk = "^0.1.12"
+cytolk = [ { version = "^0.1.12", platform = "windows" } ]
 mpv = "^1.0.3"
 requests = "^2.31.0"
+pyobjc = {version = "^9.2", platform = "darwin"}
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
