@@ -2,15 +2,12 @@
 import platform
 
 last_spoken = ""
+loaded = False
 if platform.system() == "Darwin":
     from . import NSSS
     v = NSSS.NSSS()
 if platform.system() == "Windows":
     from cytolk import tolk
-
-    tolk.try_sapi(True)
-    if not tolk.is_loaded():
-        tolk.load("__compiled__" not in globals())
 if platform.system() == "Linux":
     import speechd
 
@@ -19,10 +16,14 @@ if platform.system() == "Linux":
 
 def speak(text, interrupt=True):
     global last_spoken
+    global loaded
     last_spoken = text
     if platform.system() == "Darwin":
         v.speak(text, interrupt)
     elif platform.system() == "Windows":
+        if not loaded:
+            tolk.load("__compiled__" not in globals())
+            loaded = True
         tolk.speak(text, interrupt)
     else:
         if interrupt:
