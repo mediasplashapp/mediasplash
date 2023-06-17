@@ -3,6 +3,7 @@
 import shlex
 import subprocess
 import shutil
+import platform
 import os
 import logging
 import sys
@@ -49,7 +50,7 @@ class FFmpeg:
             stdout=stdout,
             stderr=stderr,
             env=env,
-            creationflags=subprocess.CREATE_NO_WINDOW,
+            creationflags=subprocess.CREATE_NO_WINDOW if platform.system() == "Windows" else 0,
             text=True,
             encoding="utf-8",
             errors="strict",
