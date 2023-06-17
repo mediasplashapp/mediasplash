@@ -1,6 +1,6 @@
 """
     mediasplash, A simple media player with screen reader subtitle support.
-    Copyright (C) 2022 mohamedSulaimanAlmarzooqi, Mazen428 
+    Copyright (C) 2022 mohamedSulaimanAlmarzooqi, Mazen428
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,31 +17,17 @@
 """
 
 import json
-import subprocess
-import sys
-import platform
+import ffmpy
 import os
 import uuid
-import logging
 from . import classes
 
-current_path = os.getcwd()
-if getattr(sys, "frozen", False):
-    current_path = os.path.dirname(sys.executable)
-
-ffprobe = f"{current_path}/ffprobe"
-if platform.system() == "Darwin":
-    ffprobe = "ffprobe"
-
-ffmpeg = f"{current_path}/ffmpeg"
-if platform.system() == "Darwin":
-    ffmpeg = "ffmpeg"
 
 def generate_subtitles(filename, temp_dir):
-    info = subprocess.getoutput(
-        f'{ffprobe} -v error  -show_entries stream -print_format json "{filename}"'
-    )
-    logging.debug(info)
+    process = ffmpy.FFprobe(global_options=("-show_entries", "stream", "-print_format", "json"), inputs={filename: None})
+    info = process.run()[0]
+    process.destroy()
+    process = None
     data = {}
     final = []
     try:
@@ -59,16 +45,10 @@ def generate_subtitles(filename, temp_dir):
             if "language" in i["tags"]:
                 language = f"{i['tags']['language']}"
             subtitle_file = f"{uuid.uuid4().hex}.ass"
-            command =                 [
-                ffmpeg,
-                "-i",
-                filename,
-                "-map",
-                f"0:{i['index']}",
-                        f"{os.path.join(temp_dir.name, subtitle_file)}"]
-            logging.debug(command)
-            res = subprocess.getoutput(command)
-            logging.debug(res)
+            process = ffmpy.FFmpeg(inputs={filename: None}, outputs={f"{os.path.join(temp_dir.name, subtitle_file)}": ["-map", f"0:{i['index']}"]})
+            process.run()
+            process.destroy()
+            process = None
             final.append(
                 classes.Subtitle(
                     title=title,
