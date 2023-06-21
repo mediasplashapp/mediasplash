@@ -21,6 +21,7 @@ import os
 import math
 from data_manager import DataManager as dm
 from gui import dialogs, messageBox
+from gui.goto import GoToDialog
 from global_vars import info
 from datetime import timedelta
 import webbrowser
@@ -102,16 +103,24 @@ class Main(wx.Frame):
         messageBox(self, "No update found", "No updates", wx.ICON_WARNING)
 
     def on_jump(self, event):
-        with wx.TextEntryDialog(self, "Type a position to quickly jump too, example, 5.30", "Go to") as dlg:
-            if dlg.ShowModal() == wx.ID_OK and dlg.GetValue().strip():
+        chapters = self.mpanel.media.player.chapter_list
+        logging.debug(chapters)
+        with GoToDialog(self, chapters) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
                 delta = None
 
                 def show_error():
                     messageBox(self, "input is not valid", "Error", wx.ICON_ERROR)
 
-                value = dlg.GetValue().split(".")
-                if not value:
-                    value = dlg.GetValue().split(":")
+                value = dlg.dlg_value
+                if dlg.selection == 1 and value != -1:
+                    self.mpanel.media.player.chapter = value
+                    self.mpanel.subtitles.reset()
+                    return
+                val = value.split(".")
+                if val[0] == value:
+                    val = value.split(":")
+                value = val
                 value = [int(v) for v in value if v.isdigit()]
                 if not value:
                     show_error()

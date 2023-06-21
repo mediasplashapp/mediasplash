@@ -106,6 +106,8 @@ class Media:
             )
         if hasattr(self.__dict__, "length"):
             del self.__dict__["length"]
+        if hasattr(self.__dict__, "title"):
+            del self.__dict__["title"]
 
     @cached_property
     def length(self):
