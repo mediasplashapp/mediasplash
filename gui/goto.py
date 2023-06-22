@@ -15,7 +15,7 @@ class GoToPositionPanel(wx.Panel):
         super().__init__(parent)
         goto_sizer = wx.StaticBoxSizer(wx.HORIZONTAL, self, "Go to Position")
         goto_box = goto_sizer.GetStaticBox()
-        goto_sizer.Add(wx.StaticText(goto_box, label="Type a position to quickly go to, for example: 5:30"))
+        goto_sizer.Add(wx.StaticText(goto_box, label="Type a position to quickly go to, for example: 5.30"))
         self.text = wx.TextCtrl(goto_box)
         goto_sizer.Add(self.text, 0, wx.ALL | wx.EXPAND, 10)
         self.SetSizer(goto_sizer)
@@ -24,9 +24,10 @@ class GoToPositionPanel(wx.Panel):
 class ChaptersPanel(wx.Panel):
     def __init__(self, parent):
         super().__init__(parent)
-        chapters_sizer = wx.BoxSizer(wx.VERTICAL)
-        chapters_sizer.Add(wx.StaticText(self, label="Select a chapter to go to"))
-        self.list_ctrl = wx.ListCtrl(self, style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
+        chapters_sizer = wx.StaticBoxSizer(wx.HORIZONTAL, self, "Go to chapter")
+        goto_box = chapters_sizer.GetStaticBox()
+        chapters_sizer.Add(wx.StaticText(goto_box, label="Select a chapter to go to"))
+        self.list_ctrl = wx.ListCtrl(goto_box, style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
         self.list_ctrl.InsertColumn(0, "Title")
         self.list_ctrl.InsertColumn(1, "Start Time")
         chapters_sizer.Add(self.list_ctrl, 1, wx.ALL | wx.EXPAND, 10)

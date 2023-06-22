@@ -104,8 +104,17 @@ class Main(wx.Frame):
 
     def on_jump(self, event):
         chapters = self.mpanel.media.player.chapter_list
+        cur_chapter = self.mpanel.media.player.chapter
         logging.debug(chapters)
         with GoToDialog(self, chapters) as dlg:
+            if chapters:
+                chapters_page = dlg.book.GetPage(1)
+                chapters_page.list_ctrl.Focus(cur_chapter)
+                chapters_page.list_ctrl.Select(cur_chapter)
+            position_page = dlg.book.GetPage(0)
+            position_page.text.SetValue(str(timedelta(seconds=round(self.mpanel.media.player.time_pos))).replace(":", "."))
+            position_page.text.SelectAll()
+
             if dlg.ShowModal() == wx.ID_OK:
                 delta = None
 

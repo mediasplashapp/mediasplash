@@ -23,7 +23,6 @@ import mpv
 from . import observers
 from misc import utils
 from functools import cached_property
-import concurrent.futures
 from gui import messageBox
 import wx
 
@@ -94,16 +93,6 @@ class Media:
             self.player.play(file)
         else:
             self.player.play(os.path.join(dir, file))
-        try:
-            self.player.wait_until_playing(30.0)
-            print()
-        except concurrent.futures._base.TimeoutError:
-            messageBox(
-                self.panel,
-                "The media loading have timed out, Please make sure that this media file is valid and try again.",
-                "Error",
-                wx.ICON_ERROR,
-            )
         if hasattr(self.__dict__, "length"):
             del self.__dict__["length"]
         if hasattr(self.__dict__, "title"):
