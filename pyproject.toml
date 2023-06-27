@@ -18,7 +18,7 @@ pyobjc = {version = "^9.2", platform = "darwin"}
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
 Nuitka = "^1.6.5"
-ruff = "^0.0.272"
+ruff = "^0.0.275"
 
 [tool.black]
 line-length = 120
