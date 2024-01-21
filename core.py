@@ -167,13 +167,26 @@ class Main(wx.Frame):
 
     def audio_track_set(self, event):
         result = self.audio_tracks_menu.GetChecked().GetItemLabelText()
+        self.mpanel.media.last_audio_track = result
+        self.set_audio_track(result)
+
+    def set_audio_track(self, track):
         tracks = utils.generate_track_info(self.mpanel.media.player.track_list, "audio")
         for val, i in enumerate(tracks):
-            if i == result:
+            if i == track:
+                for i in self.audio_tracks_menu.MenuItems:
+                    if i.ItemLabelText == track:
+                        i.Check()
                 self.mpanel.media.player.aid = val + 1
+                return True
+        return False
 
     def load(self):
         self.data.load()
+        if self.data.exists("last_audio_track"):
+            self.mpanel.media.last_audio_track = self.data.get("last_audio_track")
+        if self.data.exists("last_subtitle"):
+            self.mpanel.subtitles.last_subtitle = self.data.get("last_subtitle")
         if self.data.exists("subtitle_delay"):
             self.mpanel.subtitles.delay_by = int(self.data.get("subtitle_delay"))
             self.mpanel.media.player.sub_delay = int(self.data.get("subtitle_delay"))
@@ -196,6 +209,10 @@ class Main(wx.Frame):
         self.data.add("subtitle_delay", self.mpanel.subtitles.delay_by)
         self.data.add("volume", self.mpanel.media.player.volume)
         self.data.add("audio_device", self.mpanel.media.player.audio_device)
+        if self.mpanel.subtitles.last_subtitle:
+            self.data.add("last_subtitle", self.mpanel.subtitles.last_subtitle)
+        if self.mpanel.media.last_audio_track:
+            self.data.add("last_audio_track", self.mpanel.media.last_audio_track)
         if os.path.isfile(os.path.join(self.mpanel.media.dir, self.mpanel.media.file)):
             self.data.add(
                 "saved_track",
@@ -264,7 +281,8 @@ class Main(wx.Frame):
 
         if keycode == ord("P"):
             time_pos = self.mpanel.media.player.time_pos if self.mpanel.media.player.time_pos else 0
-            length = self.mpanel.media.length if self.mpanel.media.length else 0
+            #length = self.mpanel.media.length if self.mpanel.media.length else 0
+            length = self.mpanel.media.player.duration if self.mpanel.media.player.duration else 0
             speak(
                 f"Current position, {str(timedelta(seconds = round(time_pos)))} elapsed of {str(timedelta(seconds = round(length)))}"
             )

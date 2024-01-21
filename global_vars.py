@@ -20,6 +20,18 @@ from dataclasses import dataclass
 import os
 
 
+languages = {
+    "Arabic": "ara",
+    "English": "eng",
+    "Japanese": "jpn",
+    "Spanish": "spa",
+    "French": "fre",
+    "Portuguese": "por",
+    "Italian": "ita",
+    "German": "ger",
+    "Russian": "rus",
+}
+
 @dataclass(frozen=True)
 class AppInfo:
     name: str = "MediaSplash"

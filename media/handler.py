@@ -56,6 +56,7 @@ supported_media = (
     ".wav",
     ".aac",
     ".m4a",
+    ".m4b",
     ".flac",
 )
 
@@ -66,6 +67,7 @@ class Media:
         self.dir = ""
         self.file = ""
         self.is_url = False
+        self.last_audio_track = None
         self.state = utils.MediaState.neverPlayed
         self.player: mpv.MPV = mpv.MPV(
             wid=self.panel.GetHandle(),
@@ -79,7 +81,8 @@ class Media:
             loglevel="info",
             ytdl=True,
         )
-
+        self.title = None
+        self.length = 0
         self.observer = observers.ObserverManager(self)
         self.observer.register_observers()
 
@@ -87,24 +90,26 @@ class Media:
         self.dir = dir
         self.file = file
         self.is_url = url
-        if self.player.pause:
-            self.player.pause = False
+        self.state = utils.MediaState.paused
         if url:
             self.player.play(file)
         else:
             self.player.play(os.path.join(dir, file))
-        if hasattr(self.__dict__, "length"):
-            del self.__dict__["length"]
-        if hasattr(self.__dict__, "title"):
-            del self.__dict__["title"]
+        self.player.pause = True
+        self.length = self.player.duration
+        self.title = self.player.media_title
+        #if hasattr(self.__dict__, "length"):
+        #    del self.__dict__["length"]
+        #if hasattr(self.__dict__, "title"):
+        #    del self.__dict__["title"]
 
-    @cached_property
-    def length(self):
-        return self.player.duration
+    #@cached_property
+    #def length(self):
+    #    return self.player.duration
 
-    @cached_property
-    def title(self):
-        return self.player.media_title
+    #@cached_property
+    #def title(self):
+    #    return self.player.media_title
 
     def find_device(self, device):
         devices = self.player.audio_device_list

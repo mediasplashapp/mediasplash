@@ -33,6 +33,8 @@ from datetime import timedelta
 class SubHandler:
     def __init__(self, parent):
         self.panel = parent
+        # the prefered subtitle, usually the one last selected.
+        self.last_subtitle = None
         # The delaying period for speaking subtitles(In milliseconds.)
         self.delay_by = 0
         self.index = 0
@@ -80,7 +82,7 @@ class SubHandler:
         text = text.replace(r"\N", "\n")
         if text == "":
             return
-        speak(text)
+        speak(text, False)
 
     def stringify_subtitles(self):
         final_list = []
@@ -138,8 +140,13 @@ class SubHandler:
                     wx.ICON_ERROR,
                 )
                 return
+            self.set_subtitle(sub, by_default = True)
+
+    def set_subtitle(self, sub, by_default = False):
             for i in self.subtitles:
                 if i.title and i.title == sub or i.language and i.language == sub:
+                    if by_default:
+                        self.last_subtitle = i.title if i.title else i.language
                     self.subtitle = i.path
                     break
             subs = utils.generate_track_info(self.panel.media.player.track_list, "subtitle")

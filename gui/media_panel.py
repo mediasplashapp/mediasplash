@@ -57,4 +57,6 @@ class MediaPanel(wx.Panel):
         self.subtitles.load(dir, file)
         self.audio_tracks_set()
         self.timer.Start(10)
+        self.frame.set_audio_track(self.media.last_audio_track)
+        self.subtitles.set_subtitle(self.subtitles.last_subtitle)
         self.frame.SetTitle(f"{self.media.title} - {global_vars.info.name}")
