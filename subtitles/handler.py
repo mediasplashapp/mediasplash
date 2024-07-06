@@ -41,7 +41,7 @@ class SubHandler:
         self.subtitle_handler = None
         # The list of subtitles, A dictionary with keys of value string, For the name, And values for the
         # value tuple (Default, subtitle_path)
-        self.subtitles = {}
+        self.subtitles = []
         self.subtitle_text = ""
         # The current subtitle file selected.
         self.subtitle = ""
@@ -50,7 +50,7 @@ class SubHandler:
         self.temp_dir = None
 
     def update(self):
-        if not self.subtitle_handler or self.index >= len(self.subtitle_handler) - 1:
+        if not self.subtitle_handler or self.index > len(self.subtitle_handler) - 1:
             return
         if utils.get_subtitle_tuple(self.subtitle_handler[self.index]) in self.processed_events:
             self.check_for_subtitle()
@@ -154,7 +154,8 @@ class SubHandler:
                 if i == sub:
                     self.panel.media.player.sub = val + 1
                     break
-            self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
+            if os.path.exists(self.subtitle):
+                self.subtitle_handler = pysubs2.load(self.subtitle, encoding="utf-8")
 
     def reset(self):
         if not self.subtitle_handler or len(self.subtitles) == 0 or len(self.subtitle_handler) == 0:

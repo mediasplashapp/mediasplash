@@ -31,6 +31,8 @@ def generate_track_info(origin, type):
         if not "type" in i:
             continue
         if i["type"] == type:
+            if not "lang" in i and not "title" in i:
+                continue
             if not "title" in i or i["title"] == "":
                 final.append(i["lang"])
             else:
